@@ -1,0 +1,34 @@
+name: build-and-test
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet test tests/Plm.Core.Tests/Plm.Core.Tests.csproj -c Release --nologo
+      - run: dotnet test tests/Plm.Api.Tests/Plm.Api.Tests.csproj -c Release --nologo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/web_smoke.py
+      - run: python tests/web_locales.py
+      - shell: pwsh
+        run: ./scripts/package.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plm-beta-linux-x64
+          path: |
+            artifacts/plm-*-linux-x64.zip
+            artifacts/plm-*-linux-x64.json
+            artifacts/SHA256SUMS.txt

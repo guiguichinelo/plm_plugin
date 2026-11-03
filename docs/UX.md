@@ -1,0 +1,17 @@
+# Favorites, lists and Watch Later
+
+Browsing and management have separate surfaces. The normal Favorites destination becomes a personal media library: native heart favorites appear as **Curtidos**, followed by Watch Later and the user's custom lists. It displays artwork, titles and native playback/detail actions. Import/export, renaming, trash and list administration belong under the user's profile/preferences, in **Favoritos**.
+
+For supported media, the heart opens a picker with independent membership in Curtidos, Watch Later and custom lists. Curtidos uses native Jellyfin favorites. The adjacent clock toggles Watch Later directly, without changing favorites or other lists. The picker uses owner-scoped membership queries and optimistic revisions; the clock uses an idempotent absolute membership update. Metadata-only favorites retain their native behavior.
+
+Favorites is the primary destination, rather than an additional “My collection” navigation item. Existing Favorites links and legacy web URLs map to this destination. Native favorites such as people, artists and collections remain in the favorites provider; only supported media types expose the personal-list picker. Control fonts inherit the host; rounding and accent color use its theme variables. The primary control contrast follows the native light-accent/dark-text treatment.
+
+The home screen places Watch Later after Next Up. Only accessible, unfinished video candidates appear there. Series/seasons resolve to an accessible next unplayed episode; completed series do not create a dead card. Entries already displayed in Continue Watching or Next Up are suppressed from this home row. Watched selections remain in the full list. The empty home state offers a route to the library without displaying an unrelated recommendation or silently populating the list.
+
+The selected media backdrop uses the host's full-page backdrop container; the list header remains transparent. PLM owns its image layer and does not use the host's image-slot class, which the host clears on navigation. It adopts the installed native image filter and preserves theme background colors. Its lifecycle explicitly handles page reactivation, including cached pages, stale asynchronous results and leaving the library. The owned image is removed outside this view. No server branding changes are needed. The web integration uses File Transformation and Plugin Pages; native playlists remain disabled where configured.
+
+The left sidebar includes a create-list control and a right-click/ellipsis menu for rename, thumbnail upload/removal and recoverable deletion. Default lists protect their identity. A trash icon beside list organization opens the management trash directly. Thumbnails are cropped and reencoded to a square JPEG before authenticated upload and are private to their owner.
+
+Browsing provides title search, native-style sort/type/progress/year/favorite filters, searchable multiple genres with removable chips, grid/list presentation and pages of 20, 40 or 80 items. Native favorites and private lists page on the server. The genre chooser pages its visible options and retrieves user-scoped genre names, rather than loading all catalog media. Empty results can clear their filters without losing list membership.
+
+Initial screenshots and real-server usability evidence are stored privately outside this public repository. Browser checks establish functional behavior and layout evidence; the user's visual assessment remains separate.

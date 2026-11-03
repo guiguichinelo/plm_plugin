@@ -1,0 +1,262 @@
+{
+  "source": "Jellyfin Web 12.4.0",
+  "fallback": "en-us",
+  "locales": {
+    "af": {
+      "translated": 21,
+      "total": 154
+    },
+    "ar": {
+      "translated": 37,
+      "total": 154
+    },
+    "be-by": {
+      "translated": 36,
+      "total": 154
+    },
+    "bg-bg": {
+      "translated": 36,
+      "total": 154
+    },
+    "bn-bd": {
+      "translated": 14,
+      "total": 154
+    },
+    "ca": {
+      "translated": 36,
+      "total": 154
+    },
+    "cs": {
+      "translated": 36,
+      "total": 154
+    },
+    "cy": {
+      "translated": 28,
+      "total": 154
+    },
+    "da": {
+      "translated": 36,
+      "total": 154
+    },
+    "de": {
+      "translated": 37,
+      "total": 154
+    },
+    "el": {
+      "translated": 36,
+      "total": 154
+    },
+    "en-gb": {
+      "translated": 36,
+      "total": 154
+    },
+    "en-us": {
+      "translated": 154,
+      "total": 154
+    },
+    "eo": {
+      "translated": 31,
+      "total": 154
+    },
+    "es": {
+      "translated": 37,
+      "total": 154
+    },
+    "es-419": {
+      "translated": 36,
+      "total": 154
+    },
+    "es-ar": {
+      "translated": 35,
+      "total": 154
+    },
+    "es-do": {
+      "translated": 7,
+      "total": 154
+    },
+    "es-mx": {
+      "translated": 36,
+      "total": 154
+    },
+    "et": {
+      "translated": 36,
+      "total": 154
+    },
+    "eu": {
+      "translated": 36,
+      "total": 154
+    },
+    "fa": {
+      "translated": 34,
+      "total": 154
+    },
+    "fi": {
+      "translated": 36,
+      "total": 154
+    },
+    "fil": {
+      "translated": 31,
+      "total": 154
+    },
+    "fr": {
+      "translated": 37,
+      "total": 154
+    },
+    "fr-ca": {
+      "translated": 36,
+      "total": 154
+    },
+    "gl": {
+      "translated": 29,
+      "total": 154
+    },
+    "gsw": {
+      "translated": 18,
+      "total": 154
+    },
+    "he": {
+      "translated": 36,
+      "total": 154
+    },
+    "hi-in": {
+      "translated": 13,
+      "total": 154
+    },
+    "hr": {
+      "translated": 36,
+      "total": 154
+    },
+    "hu": {
+      "translated": 36,
+      "total": 154
+    },
+    "id": {
+      "translated": 34,
+      "total": 154
+    },
+    "it": {
+      "translated": 37,
+      "total": 154
+    },
+    "ja": {
+      "translated": 35,
+      "total": 154
+    },
+    "kk": {
+      "translated": 31,
+      "total": 154
+    },
+    "ko": {
+      "translated": 36,
+      "total": 154
+    },
+    "lt-lt": {
+      "translated": 36,
+      "total": 154
+    },
+    "lv": {
+      "translated": 36,
+      "total": 154
+    },
+    "mr": {
+      "translated": 26,
+      "total": 154
+    },
+    "ms": {
+      "translated": 17,
+      "total": 154
+    },
+    "nb": {
+      "translated": 36,
+      "total": 154
+    },
+    "nl": {
+      "translated": 37,
+      "total": 154
+    },
+    "nn": {
+      "translated": 36,
+      "total": 154
+    },
+    "pl": {
+      "translated": 36,
+      "total": 154
+    },
+    "pr": {
+      "translated": 13,
+      "total": 154
+    },
+    "pt": {
+      "translated": 154,
+      "total": 154
+    },
+    "pt-br": {
+      "translated": 154,
+      "total": 154
+    },
+    "pt-pt": {
+      "translated": 154,
+      "total": 154
+    },
+    "ro": {
+      "translated": 36,
+      "total": 154
+    },
+    "ru": {
+      "translated": 37,
+      "total": 154
+    },
+    "sk": {
+      "translated": 36,
+      "total": 154
+    },
+    "sl-si": {
+      "translated": 36,
+      "total": 154
+    },
+    "sq": {
+      "translated": 20,
+      "total": 154
+    },
+    "sv": {
+      "translated": 36,
+      "total": 154
+    },
+    "ta": {
+      "translated": 34,
+      "total": 154
+    },
+    "th": {
+      "translated": 18,
+      "total": 154
+    },
+    "tr": {
+      "translated": 36,
+      "total": 154
+    },
+    "uk": {
+      "translated": 36,
+      "total": 154
+    },
+    "ur-pk": {
+      "translated": 32,
+      "total": 154
+    },
+    "vi": {
+      "translated": 36,
+      "total": 154
+    },
+    "zh-cn": {
+      "translated": 37,
+      "total": 154
+    },
+    "zh-hk": {
+      "translated": 36,
+      "total": 154
+    },
+    "zh-tw": {
+      "translated": 36,
+      "total": 154
+    }
+  }
+}

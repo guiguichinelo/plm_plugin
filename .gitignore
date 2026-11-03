@@ -1,0 +1,11 @@
+build/
+artifacts/
+**/bin/
+**/obj/
+TestResults/
+*.db
+*.db-shm
+*.db-wal
+*.user
+__pycache__/
+.venv/

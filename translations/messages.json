@@ -1,0 +1,654 @@
+{
+  "Albums": {
+    "en": "Albums",
+    "pt": "Álbuns",
+    "native": "Albums"
+  },
+  "Ascending": {
+    "en": "Ascending",
+    "pt": "Crescente",
+    "native": "Ascending"
+  },
+  "Books": {
+    "en": "Books",
+    "pt": "Livros",
+    "native": "Books"
+  },
+  "ButtonCancel": {
+    "en": "Cancel",
+    "pt": "Cancelar",
+    "native": "ButtonCancel"
+  },
+  "ButtonClose": {
+    "en": "Close",
+    "pt": "Fechar",
+    "native": "ButtonClose"
+  },
+  "ButtonRename": {
+    "en": "Rename",
+    "pt": "Renomear",
+    "native": "ButtonRename"
+  },
+  "Delete": {
+    "en": "Delete",
+    "pt": "Excluir",
+    "native": "Delete"
+  },
+  "Descending": {
+    "en": "Descending",
+    "pt": "Decrescente",
+    "native": "Descending"
+  },
+  "Episodes": {
+    "en": "Episodes",
+    "pt": "Episódios",
+    "native": "Episodes"
+  },
+  "Favorites": {
+    "en": "Favorites",
+    "pt": "Favoritos",
+    "native": "Favorites"
+  },
+  "Filters": {
+    "en": "Filters",
+    "pt": "Filtros",
+    "native": "Filters"
+  },
+  "Genres": {
+    "en": "Genres",
+    "pt": "Gêneros",
+    "native": "Genres"
+  },
+  "HeaderSeasons": {
+    "en": "Seasons",
+    "pt": "Temporadas",
+    "native": "HeaderSeasons"
+  },
+  "LabelRestore": {
+    "en": "Restore",
+    "pt": "Restaurar",
+    "native": "LabelRestore"
+  },
+  "LabelTitle": {
+    "en": "Title",
+    "pt": "Título",
+    "native": "LabelTitle"
+  },
+  "LabelYear": {
+    "en": "Year",
+    "pt": "Ano",
+    "native": "LabelYear"
+  },
+  "Movies": {
+    "en": "Movies",
+    "pt": "Filmes",
+    "native": "Movies"
+  },
+  "Photos": {
+    "en": "Photos",
+    "pt": "Fotos",
+    "native": "Photos"
+  },
+  "Play": {
+    "en": "Play",
+    "pt": "Reproduzir",
+    "native": "Play"
+  },
+  "Plm0item": {
+    "en": "{0} item",
+    "pt": "1 conteúdo"
+  },
+  "PlmAddedusingtheJellyfinheart": {
+    "en": "Added using the Jellyfin heart.",
+    "pt": "Adicionados pelo coração do Jellyfin."
+  },
+  "PlmAll": {
+    "en": "All",
+    "pt": "Todos"
+  },
+  "PlmAppliedfilters": {
+    "en": "Applied filters",
+    "pt": "Filtros aplicados"
+  },
+  "PlmChangeorclearthefilterstocontinue": {
+    "en": "Change or clear the filters to continue.",
+    "pt": "Altere ou limpe os filtros para continuar."
+  },
+  "PlmChooseafileupto2MB": {
+    "en": "Choose a file up to 2 MB.",
+    "pt": "Escolha um arquivo de até 2 MB."
+  },
+  "PlmChoosealisttoviewrecentlyremovedselections": {
+    "en": "Choose a list to view recently removed selections.",
+    "pt": "Escolha uma lista para consultar seleções removidas recentemente."
+  },
+  "PlmChooseanimageupto12MB": {
+    "en": "Choose an image up to 12 MB.",
+    "pt": "Escolha uma imagem de até 12 MB."
+  },
+  "PlmChoosethelistsforthiscontent": {
+    "en": "Choose the lists for this content.",
+    "pt": "Escolha em quais listas deseja guardar este conteúdo."
+  },
+  "PlmClearfilters": {
+    "en": "Clear filters",
+    "pt": "Limpar filtros",
+    "native": "ResetFilters"
+  },
+  "PlmCompletedcontentstaysinthelistHomeshowsonlycontentthatisstillavailabletowatch": {
+    "en": "Completed content stays in the list. Home shows only content that is still available to watch.",
+    "pt": "Conteúdos concluídos continuam na lista. No início, aparecem apenas os que ainda podem ser assistidos."
+  },
+  "PlmContentinprogressisalreadyinthesectionsabove": {
+    "en": "Content in progress is already in the sections above.",
+    "pt": "Os conteúdos em andamento já estão nas seções acima."
+  },
+  "PlmContentrestored": {
+    "en": "Content restored.",
+    "pt": "Conteúdo restaurado."
+  },
+  "PlmContentsavedtoLiked": {
+    "en": "Content saved to Liked.",
+    "pt": "Conteúdos salvos em Curtidos."
+  },
+  "PlmContenttype": {
+    "en": "Content type",
+    "pt": "Tipo de conteúdo"
+  },
+  "PlmContentunavailable": {
+    "en": "Content unavailable",
+    "pt": "Conteúdo indisponível"
+  },
+  "PlmCouldnotcompletethisactionRefreshandtryagain": {
+    "en": "Could not complete this action. Refresh and try again.",
+    "pt": "Não foi possível concluir. Atualize e tente novamente."
+  },
+  "PlmCouldnotcompletethisactionRefreshthelistandtryagain": {
+    "en": "Could not complete this action. Refresh the list and try again.",
+    "pt": "Não foi possível concluir. Atualize a lista e tente novamente."
+  },
+  "PlmCouldnotcompletethisactionTryagain": {
+    "en": "Could not complete this action. Try again.",
+    "pt": "Não foi possível concluir. Tente novamente."
+  },
+  "PlmCouldnotloadthislistTryrefreshingthepage": {
+    "en": "Could not load this list. Try refreshing the page.",
+    "pt": "Não foi possível carregar esta lista. Tente atualizar a página."
+  },
+  "PlmCouldnotloadyourlists": {
+    "en": "Could not load your lists.",
+    "pt": "Não foi possível carregar suas listas."
+  },
+  "PlmCouldnotsaveTryagain": {
+    "en": "Could not save. Try again.",
+    "pt": "Não foi possível salvar. Tente novamente."
+  },
+  "PlmCouldnotsavethisimageChooseaJPEGPNGorWebPimage": {
+    "en": "Could not save this image. Choose a JPEG, PNG or WebP image.",
+    "pt": "Não foi possível salvar essa imagem. Escolha uma imagem JPEG, PNG ou WebP."
+  },
+  "PlmCouldnotupdateWatchLaterTryagain": {
+    "en": "Could not update Watch Later. Try again.",
+    "pt": "Não foi possível alterar Assistir mais tarde. Tente novamente."
+  },
+  "PlmCreatealist": {
+    "en": "Create a list",
+    "pt": "Criar nova lista"
+  },
+  "PlmDateaddedtothelibrary": {
+    "en": "Date added to the library",
+    "pt": "Data adicionada à biblioteca"
+  },
+  "PlmDeletedlistscanberestoredfor30days": {
+    "en": "Deleted lists can be restored for 30 days.",
+    "pt": "Listas excluídas podem ser restauradas por 30 dias."
+  },
+  "PlmDeletedon": {
+    "en": "Deleted on ",
+    "pt": "Excluída em "
+  },
+  "PlmDeletelist": {
+    "en": "Delete list",
+    "pt": "Excluir lista"
+  },
+  "PlmDirection": {
+    "en": "Direction",
+    "pt": "Direção"
+  },
+  "PlmExportandimportyourlists": {
+    "en": "Export and import your lists",
+    "pt": "Exportar e importar suas listas"
+  },
+  "PlmExportlists": {
+    "en": "Export lists",
+    "pt": "Exportar listas"
+  },
+  "PlmFavoritesandlists": {
+    "en": "Favorites and lists",
+    "pt": "Favoritos e listas"
+  },
+  "PlmFavoritesandlistsfor": {
+    "en": "Favorites and lists for ",
+    "pt": "Favoritos e listas de "
+  },
+  "PlmFavoritesandpersonallists": {
+    "en": "Favorites and personal lists",
+    "pt": "Favoritos e listas pessoais"
+  },
+  "PlmGridview": {
+    "en": "Grid view",
+    "pt": "Exibir como grade",
+    "native": "GridView"
+  },
+  "PlmImportlists": {
+    "en": "Import lists",
+    "pt": "Importar listas"
+  },
+  "PlmInprogress": {
+    "en": "In progress",
+    "pt": "Em andamento"
+  },
+  "PlmItemCount": {
+    "en": "{0} items",
+    "pt": "{0} conteúdos",
+    "native": "ItemCount"
+  },
+  "PlmKeepacopyofyourselectionsorimportlistsfromanotherinstallation": {
+    "en": "Keep a copy of your selections or import lists from another installation.",
+    "pt": "Guarde uma cópia das suas seleções ou importe listas de outra instalação."
+  },
+  "PlmLibrarypagesize": {
+    "en": "Library page size",
+    "pt": "Conteúdos por página",
+    "native": "LabelLibraryPageSize"
+  },
+  "PlmLike": {
+    "en": "Like ",
+    "pt": "Curtir "
+  },
+  "PlmLiked": {
+    "en": "Liked",
+    "pt": "Curtidos"
+  },
+  "PlmLikedonly": {
+    "en": "Liked only",
+    "pt": "Somente Curtidos"
+  },
+  "PlmListcreated": {
+    "en": "List created.",
+    "pt": "Lista criada."
+  },
+  "PlmListmovedtothetrash": {
+    "en": "List moved to the trash.",
+    "pt": "Lista movida para a lixeira."
+  },
+  "PlmListname": {
+    "en": "List name",
+    "pt": "Nome da lista"
+  },
+  "PlmListoptions": {
+    "en": "List options",
+    "pt": "Opções da lista"
+  },
+  "PlmListorder": {
+    "en": "List order",
+    "pt": "Ordem da lista"
+  },
+  "PlmListrestored": {
+    "en": "List restored.",
+    "pt": "Lista restaurada."
+  },
+  "PlmListsimported": {
+    "en": "Lists imported.",
+    "pt": "Listas importadas."
+  },
+  "PlmListtorestorecontent": {
+    "en": "List to restore content",
+    "pt": "Lista para restaurar conteúdos"
+  },
+  "PlmListview": {
+    "en": "List view",
+    "pt": "Exibir como lista",
+    "native": "ListView"
+  },
+  "PlmLoading": {
+    "en": "Loading…",
+    "pt": "Carregando…"
+  },
+  "PlmLoadingyourlists": {
+    "en": "Loading your lists…",
+    "pt": "Carregando suas listas…"
+  },
+  "PlmManagefavoritesandlists": {
+    "en": "Manage favorites and lists",
+    "pt": "Gerenciar favoritos e listas"
+  },
+  "PlmMoregenres": {
+    "en": "More genres",
+    "pt": "Mais gêneros"
+  },
+  "PlmMovethislisttothetrash": {
+    "en": "Move this list to the trash?",
+    "pt": "Mover esta lista para a lixeira?"
+  },
+  "PlmMoviesshowsandothercontenttowatchlater": {
+    "en": "Movies, shows and other content to watch later.",
+    "pt": "Filmes, séries e outros conteúdos para assistir depois."
+  },
+  "PlmNewlist": {
+    "en": "+ New list",
+    "pt": "+ Nova lista"
+  },
+  "PlmNextitems": {
+    "en": "Next items",
+    "pt": "Próximos conteúdos"
+  },
+  "PlmNocontentmatchesthesefilters": {
+    "en": "No content matches these filters",
+    "pt": "Nenhum conteúdo com estes filtros"
+  },
+  "PlmNolistsinthetrash": {
+    "en": "No lists in the trash.",
+    "pt": "Nenhuma lista na lixeira."
+  },
+  "PlmNopendingcontentinthissection": {
+    "en": "No pending content in this section.",
+    "pt": "Nenhum conteúdo pendente nesta seção."
+  },
+  "PlmNoremovedselectionsonthispage": {
+    "en": "No removed selections on this page.",
+    "pt": "Nenhuma seleção removida nesta página."
+  },
+  "PlmOnHome": {
+    "en": "On Home",
+    "pt": "No início"
+  },
+  "PlmOpen": {
+    "en": "Open ",
+    "pt": "Abrir "
+  },
+  "PlmOptionsfor": {
+    "en": "Options for ",
+    "pt": "Opções de "
+  },
+  "PlmOrganizelists": {
+    "en": "Organize lists",
+    "pt": "Organizar listas"
+  },
+  "PlmOrganizeyourlistsYourcatalogstayswhereitis": {
+    "en": "Organize your lists. Your catalog stays where it is.",
+    "pt": "Organize suas listas. Seu catálogo continua no mesmo lugar."
+  },
+  "PlmPageOf": {
+    "en": "{0} of {1}",
+    "pt": "{0} de {1}"
+  },
+  "PlmPageSize": {
+    "en": "Per page",
+    "pt": "Por página"
+  },
+  "PlmPersonalpreferences": {
+    "en": "Personal preferences",
+    "pt": "Preferências pessoais"
+  },
+  "PlmPlay": {
+    "en": "Play ",
+    "pt": "Reproduzir "
+  },
+  "PlmPlayback": {
+    "en": "Playback",
+    "pt": "Reprodução"
+  },
+  "PlmPlaybackprogress": {
+    "en": "Playback progress",
+    "pt": "Progresso de reprodução"
+  },
+  "PlmPlayed": {
+    "en": "Played",
+    "pt": "Concluídos"
+  },
+  "PlmPreferencesaved": {
+    "en": "Preference saved.",
+    "pt": "Preferência salva."
+  },
+  "PlmPrivatelistOnlyyoucanseethisselection": {
+    "en": "Private list. Only you can see this selection.",
+    "pt": "Lista pessoal. Só você vê esta seleção."
+  },
+  "PlmReleasedate": {
+    "en": "Release date",
+    "pt": "Data de lançamento"
+  },
+  "PlmRemovedon": {
+    "en": "Removed on ",
+    "pt": "Removido em "
+  },
+  "PlmRemovefilter": {
+    "en": "Remove filter ",
+    "pt": "Remover filtro "
+  },
+  "PlmRemovefromWatchLater": {
+    "en": "Remove from Watch Later",
+    "pt": "Remover de Assistir mais tarde"
+  },
+  "PlmRemovethumbnail": {
+    "en": "Remove thumbnail",
+    "pt": "Remover thumb"
+  },
+  "PlmRestoreremovedcontent": {
+    "en": "Restore removed content",
+    "pt": "Restaurar conteúdos removidos"
+  },
+  "PlmSave": {
+    "en": "Save ",
+    "pt": "Salvar "
+  },
+  "PlmSaved": {
+    "en": "Saved",
+    "pt": "Salvo"
+  },
+  "PlmSavetolists": {
+    "en": "Save to lists",
+    "pt": "Salvar em listas"
+  },
+  "PlmSaving": {
+    "en": "Saving…",
+    "pt": "Salvando…"
+  },
+  "PlmSearch": {
+    "en": "Search",
+    "pt": "Buscar nesta lista",
+    "native": "Search"
+  },
+  "PlmSearchgenres": {
+    "en": "Search genres",
+    "pt": "Pesquisar gêneros"
+  },
+  "PlmSetthumbnail": {
+    "en": "Set thumbnail",
+    "pt": "Definir thumb"
+  },
+  "PlmShowWatchLaterafterNextUp": {
+    "en": "Show Watch Later after Next Up",
+    "pt": "Mostrar Assistir mais tarde após A seguir"
+  },
+  "PlmShownonHomeafterNextUp": {
+    "en": "Shown on Home after Next Up.",
+    "pt": "Destacada no início após A seguir."
+  },
+  "PlmSingleItem": {
+    "en": "{0} item",
+    "pt": "{0} conteúdo"
+  },
+  "PlmSortby": {
+    "en": "Sort by",
+    "pt": "Ordenar por",
+    "native": "LabelSortBy"
+  },
+  "PlmThislistchangedinanothersessionCloseandreopenit": {
+    "en": "This list changed in another session. Close and reopen it.",
+    "pt": "A lista mudou em outra sessão. Feche e abra novamente."
+  },
+  "PlmThislistchangedinanothersessionRefreshandtryagain": {
+    "en": "This list changed in another session. Refresh and try again.",
+    "pt": "Esta lista mudou em outra sessão. Atualize e tente novamente."
+  },
+  "PlmThislistisempty": {
+    "en": "This list is empty",
+    "pt": "Esta lista está vazia"
+  },
+  "PlmTrash": {
+    "en": "Trash",
+    "pt": "Lixeira"
+  },
+  "PlmUnplayed": {
+    "en": "Unplayed",
+    "pt": "Não concluídos"
+  },
+  "PlmUsetheclocktoaddcontenttoWatchLater": {
+    "en": "Use the clock to add content to Watch Later.",
+    "pt": "Use o relógio para adicionar a Assistir mais tarde."
+  },
+  "PlmUsethehearttochooseLikedoralistTheclockaddsdirectlytoWatchLater": {
+    "en": "Use the heart to choose Liked or a list. The clock adds directly to Watch Later.",
+    "pt": "Use o coração para escolher Curtidos ou uma lista. O relógio adiciona diretamente a Assistir mais tarde."
+  },
+  "PlmViewlibrary": {
+    "en": "View library",
+    "pt": "Ver biblioteca"
+  },
+  "PlmViewlist": {
+    "en": "View list",
+    "pt": "Ver lista"
+  },
+  "PlmWatchLater": {
+    "en": "Watch Later",
+    "pt": "Assistir mais tarde"
+  },
+  "PlmYourlibrary": {
+    "en": "Your library",
+    "pt": "Sua biblioteca"
+  },
+  "PlmYourlists": {
+    "en": "Your lists",
+    "pt": "Suas listas"
+  },
+  "PlmYourselectionhasbeenkept": {
+    "en": "Your selection has been kept",
+    "pt": "Sua seleção foi preservada"
+  },
+  "Plmitems": {
+    "en": " items",
+    "pt": " conteúdos"
+  },
+  "Plmof": {
+    "en": " of ",
+    "pt": " de "
+  },
+  "Plmtolists": {
+    "en": " to lists",
+    "pt": " em listas"
+  },
+  "Previous": {
+    "en": "Previous",
+    "pt": "Anterior",
+    "native": "Previous"
+  },
+  "Save": {
+    "en": "Save",
+    "pt": "Salvar",
+    "native": "Save"
+  },
+  "Series": {
+    "en": "Series",
+    "pt": "Séries",
+    "native": "Series"
+  },
+  "Songs": {
+    "en": "Songs",
+    "pt": "Músicas",
+    "native": "Songs"
+  },
+  "Sort": {
+    "en": "Sort",
+    "pt": "Ordenar",
+    "native": "Sort"
+  },
+  "Next": {
+    "en": "Next",
+    "pt": "Próxima",
+    "native": "Next"
+  },
+  "PlmPageLoadError": {
+    "en": "Could not load this page.",
+    "pt": "Não foi possível carregar esta página."
+  },
+  "PlmAdminHelp": {
+    "en": "Open Favorites in the user menu. Plugin Pages and File Transformation must match the Jellyfin version. Selections are stored in a separate SQLite database.",
+    "pt": "Abra Favoritos no menu do usuário. Plugin Pages e File Transformation devem corresponder à versão do Jellyfin. As seleções ficam em um banco SQLite próprio."
+  },
+  "PlmDisablePlaylists": {
+    "en": "Disable native playlists",
+    "pt": "Desativar playlists nativas"
+  },
+  "PlmMirrors": {
+    "en": "Synchronize private playlists for native clients",
+    "pt": "Sincronizar playlists privadas para aplicativos nativos"
+  },
+  "PlmMirrorHelp": {
+    "en": "Disabling playlists also disables mirrors. Synchronization rechecks permissions every 60 seconds.",
+    "pt": "Desativar playlists também impede os espelhos. A sincronização reavalia permissões a cada 60 segundos."
+  },
+  "PlmCleanupPreview": {
+    "en": "Cleanup preview",
+    "pt": "Prévia da limpeza"
+  },
+  "PlmCleanupExpired": {
+    "en": "Clean up deletions older than 30 days",
+    "pt": "Limpar exclusões com mais de 30 dias"
+  },
+  "PlmConfirmCleanup": {
+    "en": "Permanently remove deletions older than 30 days? Back up first.",
+    "pt": "Eliminar exclusões com mais de 30 dias? Faça um backup antes."
+  },
+  "PlmAdminError": {
+    "en": "Operation failed. Check the server log.",
+    "pt": "Falha na operação. Consulte o log do servidor."
+  },
+  "SettingsSaved": {
+    "en": "Settings saved.",
+    "pt": "Configuração salva.",
+    "native": "SettingsSaved"
+  },
+  "AddToPlaylist": {
+    "en": "Add to playlist",
+    "pt": "Adicionar à playlist",
+    "native": "AddToPlaylist"
+  },
+  "NewPlaylist": {
+    "en": "New playlist",
+    "pt": "Nova playlist",
+    "native": "NewPlaylist"
+  },
+  "PlmOpenAction": {
+    "en": "Open",
+    "pt": "Abrir"
+  },
+  "PlmApply": {
+    "en": "Apply",
+    "pt": "Aplicar"
+  },
+  "PlmClear": {
+    "en": "Clear",
+    "pt": "Limpar"
+  },
+  "HeaderAudioBooks": {
+    "en": "Audiobooks",
+    "pt": "Audiolivros",
+    "native": "HeaderAudioBooks"
+  },
+  "PlmLikeAction": {
+    "en": "Like",
+    "pt": "Curtir"
+  }
+}
