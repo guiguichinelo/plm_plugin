@@ -239,6 +239,12 @@ public sealed class LibraryStore
         using var db=Open();var p=ids.Select((id,i)=>("$p"+i,(object?)Key(id))).Append(("$owner",(object?)Key(owner))).ToArray();
         using var c=Command(db,null,"SELECT s.item_id FROM selections s JOIN collections c ON c.id=s.collection_id WHERE c.owner=$owner AND c.watch_later=1 AND s.deleted_at IS NULL AND s.item_id IN ("+string.Join(',',p.Take(ids.Count).Select(v=>v.Item1))+")",p);using var r=c.ExecuteReader();var result=new List<Guid>();while(r.Read())result.Add(Guid.Parse(r.GetString(0)));return result;
     }
+    public IReadOnlyList<Guid> SavedMemberships(Guid owner,IReadOnlyList<Guid> ids)
+    {
+        if(ids.Count>200)throw new ArgumentException();Key(owner);if(ids.Count==0)return [];
+        using var db=Open();var p=ids.Select((id,i)=>("$p"+i,(object?)Key(id))).Append(("$owner",(object?)Key(owner))).ToArray();
+        using var c=Command(db,null,"SELECT DISTINCT s.item_id FROM selections s JOIN collections c ON c.id=s.collection_id WHERE c.owner=$owner AND c.deleted_at IS NULL AND s.deleted_at IS NULL AND s.item_id IN ("+string.Join(',',p.Take(ids.Count).Select(v=>v.Item1))+")",p);using var r=c.ExecuteReader();var result=new List<Guid>();while(r.Read())result.Add(Guid.Parse(r.GetString(0)));return result;
+    }
     public void SetWatchMembership(Guid owner,Guid item,bool saved)
     {
         var collection=Create(owner,"Assistir mais tarde",true);Key(item);using var db=Open();using var tx=db.BeginTransaction();var current=Require(db,tx,owner,collection.Id);

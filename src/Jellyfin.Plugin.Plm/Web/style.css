@@ -16,3 +16,16 @@
 .plm-list-search{display:flex;align-items:center;gap:.45em;flex:1 1 14rem;max-width:25rem;min-width:10rem}.plm-list-search .inputContainer{flex:1;min-width:0;margin:0}.plm-list-search .emby-input{width:100%;box-sizing:border-box}.plm-page-size-control{display:flex;align-items:center;gap:.55rem;flex:0 0 auto;min-width:0;margin:0}.plm-page-size-control .selectLabel{font:inherit;white-space:nowrap;margin:0}.plm-page-size-control .emby-select{width:4.5rem}.plm-browse-toolbar{align-items:center!important}.plm-browse-toolbar .plm-filter-buttons{align-self:center}.plm-list-more{inset-inline-end:4px;right:auto}.plm-sidebar{border-right:0;border-inline-end:1px solid var(--plm-line)}.plm-list-row .plm-list-button{text-align:start;padding-inline-end:2rem}.plm-list-menu .plm-menu-option{text-align:start}.plm-picker-row{text-align:start}
 @media(max-width:700px){.plm-list-search{flex:1 1 11rem;max-width:none}.plm-page-size-control{flex:0 0 auto}.plm-sidebar{border-inline-end:0}.plm-browse-toolbar{row-gap:1rem}}
 .plm-page-size-control .selectArrowContainer{top:50%;bottom:auto;transform:translateY(-50%)}
+
+/* Dialogs and controls use the host palette, including native Light. */
+.plm-ui{--plm-panel:var(--jf-palette-background-paper,#242535);--plm-line:var(--jf-palette-divider,rgba(128,128,128,.22))}
+.plm-ui.plm-dialog,.plm-ui.plm-list-menu{background:var(--plm-panel);color:var(--jf-palette-text-primary,inherit)}
+.plm-ui .plm-input{background:var(--plm-panel);color:var(--jf-palette-text-primary,inherit)}
+.plm-ui .plm-muted,.plm-ui .plm-status{color:inherit;opacity:.8}
+:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-card-subtitle{color:inherit;opacity:.75}
+:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-list-button:hover,:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-button:hover{background:rgba(0,0,0,.1)}
+:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-filter-buttons .plm-icon-button{color:inherit}
+:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-sidebar-label{color:inherit;opacity:.72}
+:is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-cover .material-icons{color:var(--jf-palette-primary-contrastText,#000)}
+
+button.plm-saved-heart,button.plm-saved-heart .material-icons{color:rgb(var(--accent,0,164,220))!important}

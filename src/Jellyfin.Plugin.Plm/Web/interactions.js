@@ -40,3 +40,23 @@
  });
  window.addEventListener('plm:changed',()=>{watchCache.clear();for(const b of document.querySelectorAll('[data-plm-watch-item]'))if(observer)observer.observe(b);else queue(b);});
 })();
+
+(() => {
+ 'use strict';const P=window.PLM;if(!P)return;
+ let owner='',generation=0,timer=null;const cache=new Map();
+ const key=id=>String(id||'').replaceAll('-','').toLowerCase();
+ const buttons=()=>[...document.querySelectorAll('button[is="emby-ratingbutton"][data-id],.plm-card .plm-heart')];
+ function paint(b,saved){const native=b.dataset.isfavorite==='true'||(!b.hasAttribute('data-isfavorite')&&b.classList.contains('plm-liked'));b.classList.toggle('plm-saved-heart',native||saved);b.setAttribute('aria-pressed',String(native||saved));}
+ async function refresh(){timer=null;const actor=P.owner();if(!actor)return;
+  if(owner!==actor){owner=actor;generation++;cache.clear();for(const b of buttons()){b.classList.remove('plm-saved-heart');b.removeAttribute('aria-pressed');}}
+  const token=generation,current=buttons().filter(b=>b.getClientRects().length),pending=new Set();
+  for(const b of current){const id=key(b.dataset.id||b.closest('[data-id]')?.dataset.id);const value=cache.get(id);if(value&&Date.now()-value.at<60000)paint(b,value.saved);else if(id)pending.add(id);}
+  const ids=[...pending];for(let offset=0;offset<ids.length;offset+=200){const batch=ids.slice(offset,offset+200);try{const values=await P.call('items/memberships?ids='+batch.join(','));if(P.owner()!==actor||generation!==token)return;const saved=new Set(values.map(key));for(const id of batch)cache.set(id,{saved:saved.has(id),at:Date.now()});}catch{return;}}
+  while(cache.size>1000)cache.delete(cache.keys().next().value);
+  if(P.owner()!==actor||generation!==token)return;for(const b of current){const value=cache.get(key(b.dataset.id||b.closest('[data-id]')?.dataset.id));if(b.isConnected&&value)paint(b,value.saved);}
+ }
+ function schedule(){if(!timer)timer=setTimeout(refresh,80);}
+ P.refreshHearts=schedule;
+ new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['data-isfavorite']});
+ window.addEventListener('plm:changed',()=>{generation++;cache.clear();schedule();});window.addEventListener('hashchange',schedule);schedule();
+})();

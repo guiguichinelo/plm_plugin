@@ -1,6 +1,6 @@
 (() => {
  'use strict';if(window.PLM)return;
- const version='ux7',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
+ const version='ux10',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
  const t=(...args)=>window.PLM.t(...args);
  let cacheOwner='',cache=new Map();
  const owner=()=>window.ApiClient?.getCurrentUserId()||'';
@@ -40,8 +40,18 @@
   if(typeof api().updateFavoriteStatus==='function')await api().updateFavoriteStatus(owner(),media.Id,value);
   else await api().ajax({url:api().getUrl('UserFavoriteItems/'+media.Id),type:value?'POST':'DELETE'});
   if(owner()!==user)throw Error('session_changed');media.UserData={...media.UserData,IsFavorite:value};
-  for(const b of document.querySelectorAll('button[is="emby-ratingbutton"][data-id]'))if(b.dataset.id===media.Id){b.setAttribute('data-isfavorite',String(value));b.classList.toggle('ratingbutton-withrating',value);b.querySelector('.material-icons')?.classList.toggle('ratingbutton-icon-withrating',value);}
+  paintFavorite(media.Id,value);
   changed();
+ }
+ function paintFavorite(id,value){
+  const key=v=>String(v).replaceAll('-','').toLowerCase();
+  for(const b of document.querySelectorAll('button[is="emby-ratingbutton"][data-id],.plm-card .plm-heart')){
+   if(key(b.dataset.id||b.closest('[data-id]')?.dataset.id)!==key(id))continue;
+   b.setAttribute('data-isfavorite',String(value));
+   b.classList.toggle('ratingbutton-withrating',value);b.classList.toggle('plm-liked',value);
+   b.querySelector('.material-icons')?.classList.toggle('ratingbutton-icon-withrating',value);
+  }
+  window.PLM.refreshHearts?.();
  }
  function container(cls=''){const c=typeof document.registerElement==='function'?document.createElement('div','emby-itemscontainer'):document.createElement('div',{is:'emby-itemscontainer'});c.setAttribute('is','emby-itemscontainer');c.setAttribute('data-multiselect','false');c.setAttribute('data-contextmenu','false');c.className='itemsContainer plm-cards '+cls;setTimeout(()=>c.classList.toggle('plm-native-ready',typeof c.resume==='function'),150);return c;}
  function card(media,{wide=false}={}){
@@ -62,12 +72,12 @@
  }
  async function picker(media){
   styles();document.querySelector('.plm-picker')?.close();const user=owner(),d=el('dialog','plm-ui plm-dialog plm-picker');const header=el('div','plm-dialog-heading'),close=button(t("ButtonClose"),()=>d.close(),'plm-button');header.append(el('h2','',t("PlmFavoritesandlists")),close);const status=el('p','plm-status',t("PlmLoadingyourlists")),rows=el('div','plm-picker-rows');d.append(header,el('p','plm-muted',title(media)),rows,status);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
-  function row(label,checked,work,kind){const l=el('label','plm-picker-row');const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('aria-label',label);l.append(icon(kind),el('span','',label),input);input.onchange=async()=>{const value=input.checked;input.disabled=true;status.textContent=t("PlmSaving");try{await work(value);status.textContent=t("PlmSaved");changed();}catch(e){input.checked=!value;status.textContent=e.status===409?t("PlmThislistchangedinanothersessionCloseandreopenit"):t("PlmCouldnotsaveTryagain");}finally{input.disabled=false;}};rows.append(l);}
+  function row(label,checked,work,kind){const l=el('label','plm-picker-row');const input=el('input');input.type='checkbox';input.checked=checked;input.setAttribute('aria-label',label);l.append(icon(kind),el('span','',label),input);input.onchange=async()=>{const value=input.checked;rows.querySelectorAll('input').forEach(i=>i.disabled=true);status.textContent=t("PlmSaving");try{await work(value);status.textContent=t("PlmSaved");changed();}catch(e){input.checked=!value;status.textContent=e.status===409?t("PlmThislistchangedinanothersessionCloseandreopenit"):t("PlmCouldnotsaveTryagain");}finally{rows.querySelectorAll('input').forEach(i=>i.disabled=false);}};rows.append(l);return input;}
   try{
    const memberships=await call('items/'+media.Id+'/memberships');if(user!==owner()||!d.isConnected){d.close();return;}
-   row(t("PlmLiked"),!!media.UserData?.IsFavorite,value=>favorite(media,value),'favorite');
+   const liked=row(t("PlmLiked"),!!media.UserData?.IsFavorite,value=>favorite(media,value),'favorite');
    for(const m of memberships){const c=m.collection;row(name(c),m.contains,async value=>{if(value)await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});else await call('collections/'+c.id+'/items/'+media.Id+'?revision='+c.revision,'DELETE');c.revision++;},c.watchLater?'watch_later':'queue');}
-   const create=button(t("PlmNewlist"),async()=>{const label=await inputDialog(t("PlmListname"));if(!label)return;const c=await call('collections','POST',{name:label});await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});changed();d.close();picker(media);});d.append(create);status.textContent=t("PlmChoosethelistsforthiscontent");
+   const create=button(t("PlmNewlist"),async()=>{const label=await inputDialog(t("PlmListname"));if(!label)return;create.disabled=true;try{const c=await call('collections','POST',{name:label});await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});changed();d.close();picker(media);}catch{status.textContent=t('PlmCouldnotsaveTryagain');}finally{create.disabled=false;}});d.append(create);status.textContent=t("PlmChoosethelistsforthiscontent");
   }catch{status.textContent=t("PlmCouldnotloadyourlists");}
  }
  async function entries(id,{page=0,genre='',progress='',limit=40,trash=false}={}){const query=new URLSearchParams({startIndex:String(page*limit),limit:String(limit),genre,progress,trash:String(trash)});const result=await call('collections/'+id+'?'+query);const values=await map(result.items,async e=>({...e,native:e.media.status==='catalogued'?await item(e.itemId):null}));return {...result,items:values};}

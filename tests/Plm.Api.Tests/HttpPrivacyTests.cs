@@ -32,6 +32,8 @@ public sealed class FixtureAuth(IOptionsMonitor<AuthenticationSchemeOptions> opt
 }
 public sealed class FixtureCatalog : ICatalogAccess
 {
+ public readonly HashSet<(Guid Owner, Guid Item)> Favorites = [];
+ public void EnsureFavorite(Guid owner, Guid id) => Favorites.Add((owner, id));
  public MediaCard Resolve(Guid owner,Guid id)=>new(id,"catalogued","Example","Movie",["Drama"]);
  public IReadOnlyDictionary<Guid,MediaCard> ResolveMany(Guid owner,IReadOnlyList<Guid> ids)=>ids.ToDictionary(id=>id,id=>Resolve(owner,id));
  public CatalogPage Query(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int start,int limit){var result=ids.Select(id=>Resolve(owner,id)).Where(m=>filter.Genres.Length==0||filter.Genres.Any(g=>m.Genres.Contains(g))).ToArray();return new(result.Length,result.Skip(start).Take(limit).ToArray());}
@@ -55,6 +57,28 @@ public sealed class HttpPrivacyTests : IDisposable
  }
  private HttpClient Client(Guid? id=null){var c=_server.CreateClient();if(id.HasValue)c.DefaultRequestHeaders.Add("X-Test-User",id.ToString());return c;}
  private async Task<Guid> Create(HttpClient c){var r=await c.PostAsJsonAsync("/PLM/v1/me/collections",new{Name="Private"});r.EnsureSuccessStatusCode();var d=await r.Content.ReadFromJsonAsync<JsonElement>();return d.GetProperty("id").GetGuid();}
+ [Fact]public async Task MembershipReadDoesNotLikeAndIncludesQueueWithoutLeakingOwners()
+ {
+  using var a=Client(_a);using var b=Client(_b);var first=await Create(a);var second=await Create(a);var item=Guid.NewGuid();
+  (await a.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/items",new{Revision=0,ItemId=item})).EnsureSuccessStatusCode();
+  (await a.PostAsJsonAsync($"/PLM/v1/me/collections/{second}/items",new{Revision=0,ItemId=item})).EnsureSuccessStatusCode();
+  var catalog=(FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>();Assert.Empty(catalog.Favorites);
+  var path=$"/PLM/v1/me/items/memberships?ids={item}";
+  Assert.Single(await a.GetFromJsonAsync<Guid[]>(path)??[]);Assert.Empty(await b.GetFromJsonAsync<Guid[]>(path)??[]);
+  (await a.DeleteAsync($"/PLM/v1/me/collections/{first}/items/{item}?revision=1")).EnsureSuccessStatusCode();Assert.Single(await a.GetFromJsonAsync<Guid[]>(path)??[]);
+  (await a.DeleteAsync($"/PLM/v1/me/collections/{second}/items/{item}?revision=1")).EnsureSuccessStatusCode();Assert.Empty(await a.GetFromJsonAsync<Guid[]>(path)??[]);
+  (await a.PutAsJsonAsync($"/PLM/v1/me/watch-later/items/{item}",new{Saved=true})).EnsureSuccessStatusCode();Assert.Single(await a.GetFromJsonAsync<Guid[]>(path)??[]);Assert.Empty(catalog.Favorites);
+  Assert.Equal(HttpStatusCode.NotFound,(await a.PostAsync("/PLM/v1/me/favorites/reconcile",null)).StatusCode);
+ }
+ [Fact]public async Task WatchQueueAndRejectedWritesDoNotLikeTitles()
+ {
+  using var a=Client(_a);using var b=Client(_b);var id=await Create(a);var item=Guid.NewGuid();
+  var catalog=(FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>();
+  Assert.Equal(HttpStatusCode.NotFound,(await b.PostAsJsonAsync($"/PLM/v1/me/collections/{id}/items",new{Revision=0,ItemId=item})).StatusCode);
+  Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync($"/PLM/v1/me/collections/{id}/items",new{Revision=99,ItemId=item})).StatusCode);
+  (await a.PutAsJsonAsync($"/PLM/v1/me/watch-later/items/{item}",new{Saved=true})).EnsureSuccessStatusCode();
+  Assert.Empty(catalog.Favorites);
+ }
  [Fact]public async Task AnonymousCannotEnumerateOrCreate()
  {using var c=Client();Assert.Equal(HttpStatusCode.Unauthorized,(await c.GetAsync("/PLM/v1/me/collections")).StatusCode);Assert.Equal(HttpStatusCode.Unauthorized,(await c.PostAsJsonAsync("/PLM/v1/me/collections",new{Name="A"})).StatusCode);}
  [Fact]public async Task CrossAccountIdsCannotBeUsedForReadsOrWrites()

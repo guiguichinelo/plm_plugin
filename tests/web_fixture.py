@@ -21,6 +21,7 @@ getItems:async(user,options={})=>{let items=(!options.IsFavorite||fixture.favori
 ajax:async request=>{const url=new URL(request.url),path=url.pathname,method=request.type,body=request.data?JSON.parse(request.data):null;
 if(path==='/PLM/v1/me/thumbnails')return Object.entries(fixture.art||{}).map(([Key,DataUrl])=>({Key,Version:'1'}));
 if(path.endsWith('/thumbnail')){const key=path.split('/')[5];fixture.art||={};if(method==='PUT'){fixture.art[key]='data:image/jpeg;base64,'+body.jpeg;return {saved:true};}if(method==='DELETE'){delete fixture.art[key];return null;}return fixture.art[key]?{DataUrl:fixture.art[key],Version:'1'}:null;}
+if(path==='/PLM/v1/me/items/memberships')return [...new Set(fixture.lists.filter(c=>!c.DeletedAt).flatMap(c=>(fixture.selections[c.Id]||[]).filter(e=>!e.DeletedAt).map(e=>e.ItemId)))];
 if(path==='/PLM/v1/me/watch-later/membership')return (fixture.selections[fixture.lists[0].Id]||[]).filter(e=>!e.DeletedAt).map(e=>e.ItemId);
 if(path.includes('/watch-later/items/')){fixture.selections[fixture.lists[0].Id]=body.saved?[{ItemId:path.split('/').pop(),Position:0,Media:{Status:'catalogued',Name:'Synthetic film',Kind:'Movie',Genres:['Drama']}}]:[];return {saved:body.saved};}
 if(path==='/PLM/v1/me/watch-later')return structuredClone(fixture.lists[0]);
@@ -31,7 +32,7 @@ if(path==='/PLM/v1/me/collections'&&method==='POST'){const c={Id:String(fixture.
 const match=path.match(/collections\/([a-f0-9]+)/);if(match){const c=fixture.lists.find(x=>x.Id===match[1]);
 if(method==='GET'){let entries=fixture.selections[c.Id]||[];if(url.searchParams.get('trash')!=='true')entries=entries.filter(e=>!e.DeletedAt);if(url.searchParams.get('progress')==='unplayed'&&fixture.played)entries=[];return {Collection:structuredClone(c),TotalRecordCount:entries.length,Items:structuredClone(entries)};}
 const revision=body?.revision??Number(url.searchParams.get('revision'));if(revision!==c.Revision)throw {status:409};
-if(path.endsWith('/items')&&method==='POST')fixture.selections[c.Id]=[{ItemId:body.itemId,Position:0,Media:{Status:'catalogued',Name:'Synthetic film',Kind:'Movie',Genres:['Drama']}}];
+if(path.endsWith('/items')&&method==='POST'){fixture.selections[c.Id]=[{ItemId:body.itemId,Position:0,Media:{Status:'catalogued',Name:'Synthetic film',Kind:'Movie',Genres:['Drama']}}];}
 else if(path.endsWith('/restore'))c.DeletedAt=null;
 else if(method==='DELETE'&&path.includes('/items/'))fixture.selections[c.Id][0].DeletedAt='2026-01-01T00:00:00Z';
 else if(method==='DELETE')c.DeletedAt='2026-01-01T00:00:00Z';

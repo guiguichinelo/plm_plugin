@@ -16,7 +16,7 @@ public sealed class Plugin : BasePlugin<Configuration>, IHasWebPages
     public Plugin(IApplicationPaths paths, IXmlSerializer serializer) : base(paths, serializer) { Instance = this; }
     public override string Name => "Personal Library Manager";
     public override Guid Id => Guid.Parse("9963ad46-7894-424f-b854-786f370a81a3");
-    public override string Description => "Private personal collections and Watch Later. Beta 1 for Jellyfin 12.4.0; Linux x64.";
+    public override string Description => "Private personal collections and Watch Later. Beta 2 for Jellyfin 12.4.0; Linux x64.";
     public IEnumerable<PluginPageInfo> GetPages() => [new() { Name = "plm", EmbeddedResourcePath = "Jellyfin.Plugin.Plm.Web.admin.html" }];
 }
 public sealed class Registrator : IPluginServiceRegistrator

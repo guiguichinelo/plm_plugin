@@ -29,6 +29,13 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
     }
     [HttpGet("collections")]
     public IActionResult List([FromQuery] bool trash = false) => Handle(() => store.List(Owner, trash));
+    [HttpGet("items/memberships")]
+    public IActionResult SavedMembership([FromQuery]string ids)=>Handle(()=>{
+        var parts=ids.Split(',',StringSplitOptions.RemoveEmptyEntries);
+        if(parts.Length>200||parts.Any(p=>!Guid.TryParse(p,out var id)||id==Guid.Empty))throw new ArgumentException();
+        var visible=catalog.ResolveMany(Owner,parts.Select(Guid.Parse).Distinct().ToArray()).Where(x=>x.Value.Status=="catalogued").Select(x=>x.Key).ToArray();
+        return store.SavedMemberships(Owner,visible);
+    });
     [HttpPost("collections")]
     public IActionResult Create(CreateRequest body) => Handle(() => store.Create(Owner, body.Name));
     [HttpPost("watch-later")]
@@ -59,7 +66,8 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
         var item = body.ItemId ?? Guid.Empty;
         store.Get(Owner, id);
         if (item == Guid.Empty || catalog.Resolve(Owner, item).Status != "catalogued") throw new InvalidSelectionException("Unavailable item.");
-        store.Add(Owner, id, item, body.Revision); return new { added = true };
+        store.Add(Owner, id, item, body.Revision);
+        return new { added = true };
     });
     [HttpDelete("collections/{id:guid}/items/{item:guid}")]
     public IActionResult Remove(Guid id, Guid item, [FromQuery] long revision) => Handle(() => { store.Remove(Owner, id, item, revision); return null; });
@@ -96,7 +104,7 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
 public sealed class AdminController(LibraryStore store) : ControllerBase
 {
     [HttpGet("health")]
-    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.1", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
+    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.2", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
     [HttpGet("maintenance/preview")]
     public object Preview() => store.PreviewCleanup(DateTimeOffset.UtcNow);
     [HttpPost("maintenance/execute")]
