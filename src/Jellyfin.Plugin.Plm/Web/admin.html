@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html><head><title>Personal Library Manager</title></head><body>
 <div id="plmConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"><div data-role="content"><div class="content-primary">
-<h1>Personal Library Manager</h1><p>Beta 1 · Jellyfin 12.4.0 · Linux x64</p>
+<h1>Personal Library Manager</h1><p>Beta 5 · Jellyfin 12.4.0 · Linux x64</p>
 <p><span data-plm-text="PlmAdminHelp">Open Favorites in the user menu. Plugin Pages and File Transformation must match the Jellyfin version. Selections are stored in a separate SQLite database.</span></p>
 <form id="plmConfig"><p><label><input id="plmDisablePlaylists" type="checkbox"> <span data-plm-text="PlmDisablePlaylists">Disable native playlists</span></label></p><label><input id="plmMirrors" type="checkbox"> <span data-plm-text="PlmMirrors">Synchronize private playlists for native clients</span></label><p><span data-plm-text="PlmMirrorHelp">Disabling playlists also disables mirrors. Synchronization rechecks permissions every 60 seconds.</span></p><button id="plmSave" type="submit" disabled><span data-plm-text="Save">Save</span></button></form>
 <p><button id="plmPreview" type="button"><span data-plm-text="PlmCleanupPreview">Cleanup preview</span></button><button id="plmCleanup" type="button"><span data-plm-text="PlmCleanupExpired">Clean up deletions older than 30 days</span></button></p><pre id="plmAdminStatus" role="status"></pre>
 </div></div>
 <script>
-(()=>{let loading=false;const start=()=>{if(!window.PLM?.i18n){if(loading)return;loading=true;const script=document.createElement('script');script.src=ApiClient.getUrl('PLM/web/'+(window.PLM?'i18n.js':'runtime.js'))+'?v=beta4';script.onload=()=>{loading=false;start();};script.onerror=()=>{document.querySelector('#plmAdminStatus').textContent='Could not load the interface.';};document.head.append(script);return;}PLM.i18n.ready.then(()=>{const P=window.PLM;const page=document.getElementById('plmConfigPage'),id='9963ad46-7894-424f-b854-786f370a81a3',status=page.querySelector('#plmAdminStatus');let config;P.i18n.apply(page);
+(()=>{let loading=false;const start=()=>{if(!window.PLM?.i18n){if(loading)return;loading=true;const script=document.createElement('script');script.src=ApiClient.getUrl('PLM/web/'+(window.PLM?'i18n.js':'runtime.js'))+'?v=beta5';script.onload=()=>{loading=false;start();};script.onerror=()=>{document.querySelector('#plmAdminStatus').textContent='Could not load the interface.';};document.head.append(script);return;}PLM.i18n.ready.then(()=>{const P=window.PLM;const page=document.getElementById('plmConfigPage'),id='9963ad46-7894-424f-b854-786f370a81a3',status=page.querySelector('#plmAdminStatus');let config;P.i18n.apply(page);
 const report=()=>{status.textContent=P.t('PlmAdminError');};
 const load=()=>{page.querySelector('#plmSave').disabled=true;ApiClient.getPluginConfiguration(id).then(c=>{config=c;page.querySelector('#plmMirrors').checked=c.EnableMirrors===true;page.querySelector('#plmDisablePlaylists').checked=c.DisableNativePlaylists===true;page.querySelector('#plmSave').disabled=false;}).catch(report);};
 page.addEventListener('pageshow',load);load();

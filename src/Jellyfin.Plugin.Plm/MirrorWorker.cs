@@ -12,7 +12,7 @@ using Plm.Core;
 
 namespace Jellyfin.Plugin.Plm;
 
-public sealed class MirrorWorker(LibraryStore store, ILibraryManager library, IUserManager users, IPlaylistManager playlists, ICatalogAccess catalog, MirrorMutationGate gate, ILogger<MirrorWorker> log) : BackgroundService
+public sealed class MirrorWorker(LibraryStore store, ILibraryManager library, IUserManager users, IPlaylistManager playlists, ICatalogAccess catalog, MirrorMutationGate gate, ILogger<MirrorWorker> log, CatalogResilienceStore? memory = null) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,11 +27,11 @@ public sealed class MirrorWorker(LibraryStore store, ILibraryManager library, IU
                     try { await Synchronize(source, stoppingToken); }
                     catch (Exception e) when (e is not OperationCanceledException) { log.LogWarning(e, "PLM mirror synchronization failed for collection {CollectionId}; retrying next cycle.", source.Id); }
                 }
-                foreach (var owner in store.Owners())
+                foreach (var owner in store.Owners().Concat(memory?.References().Select(r=>r.Owner)??[]).Distinct())
                 {
                     var now = DateTimeOffset.UtcNow;
                     var missing = store.ObserveOwner(owner, users.GetUserById(owner) is not null, now);
-                    if (missing < now.AddDays(-30)) store.PurgeMissingOwner(owner, now);
+                    if (missing < now.AddDays(-30)) { store.PurgeMissingOwner(owner, now); memory?.DeleteOwner(owner); }
                 }
             }
             catch (Exception error) when (error is not OperationCanceledException)

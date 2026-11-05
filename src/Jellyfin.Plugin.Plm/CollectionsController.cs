@@ -13,7 +13,7 @@ public sealed record WatchRequest([property:System.Text.Json.Serialization.JsonR
 [ApiController]
 [Authorize]
 [Route("PLM/v1/me")]
-public sealed class CollectionsController(LibraryStore store, ICatalogAccess catalog) : ControllerBase
+public sealed class CollectionsController(LibraryStore store, ICatalogAccess catalog, CatalogResilience? resilience = null) : ControllerBase
 {
     private Guid Owner => Guid.TryParse(User.FindFirst("Jellyfin-UserId")?.Value, out var id) && id != Guid.Empty ? id : throw new UnauthorizedAccessException();
     private IActionResult Handle(Func<object?> work)
@@ -43,7 +43,7 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
     [HttpGet("watch-later/membership")]
     public IActionResult WatchMembership([FromQuery]string ids)=>Handle(()=>{var parts=ids.Split(',',StringSplitOptions.RemoveEmptyEntries);if(parts.Length>200||parts.Any(p=>!Guid.TryParse(p,out var id)||id==Guid.Empty))throw new ArgumentException();return store.WatchMemberships(Owner,parts.Select(Guid.Parse).Distinct().ToArray());});
     [HttpPut("watch-later/items/{id:guid}")]
-    public IActionResult SetWatch(Guid id,WatchRequest body)=>Handle(()=>{if(body.Saved&&catalog.Resolve(Owner,id).Status!="catalogued")throw new InvalidSelectionException("Unavailable item.");store.SetWatchMembership(Owner,id,body.Saved);return new{saved=body.Saved};});
+    public IActionResult SetWatch(Guid id,WatchRequest body)=>Handle(()=>{if(body.Saved&&catalog.Resolve(Owner,id).Status!="catalogued")throw new InvalidSelectionException("Unavailable item.");if(body.Saved)resilience?.Capture(Owner,id);store.SetWatchMembership(Owner,id,body.Saved);return new{saved=body.Saved};});
     [HttpGet("items/{itemId:guid}/memberships")]
     public IActionResult Memberships(Guid itemId)=>Handle(()=>
     {
@@ -66,6 +66,7 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
         var item = body.ItemId ?? Guid.Empty;
         store.Get(Owner, id);
         if (item == Guid.Empty || catalog.Resolve(Owner, item).Status != "catalogued") throw new InvalidSelectionException("Unavailable item.");
+        resilience?.Capture(Owner,item);
         store.Add(Owner, id, item, body.Revision);
         return new { added = true };
     });
@@ -101,10 +102,21 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
 [ApiController]
 [Authorize(Policy = "RequiresElevation")]
 [Route("PLM/v1/admin")]
-public sealed class AdminController(LibraryStore store) : ControllerBase
+public sealed class AdminController(LibraryStore store, CatalogResilience? resilience = null, CatalogResilienceStore? memory = null) : ControllerBase
 {
+    [HttpGet("resilience")]
+    public object Resilience()
+    {
+        Response.Headers.CacheControl="private, no-store";
+        var rows=memory?.References()??[];
+        return new { enabled=resilience is not null, baselineComplete=resilience?.BaselineComplete??false,
+            lastSuccessfulCycle=resilience?.LastSuccessfulCycle,lastError=resilience?.LastError,
+            protectedReferences=rows.Count,missing=rows.Count(r=>r.Missing),
+            pendingFavorites=rows.Count(r=>r.PendingFavorite),
+            autoMatchableReferences=rows.Count(r=>r.Identity.Providers.Count>0) };
+    }
     [HttpGet("health")]
-    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.4", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
+    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.5", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
     [HttpGet("maintenance/preview")]
     public object Preview() => store.PreviewCleanup(DateTimeOffset.UtcNow);
     [HttpPost("maintenance/execute")]

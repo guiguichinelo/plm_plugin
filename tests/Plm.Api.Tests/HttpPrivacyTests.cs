@@ -51,12 +51,27 @@ public sealed class HttpPrivacyTests : IDisposable
   _host=new HostBuilder().ConfigureWebHost(web=>web.UseTestServer().ConfigureServices(s=>{
    s.AddAuthentication("fixture").AddScheme<AuthenticationSchemeOptions,FixtureAuth>("fixture",_=>{});
    s.AddAuthorization(o=>o.AddPolicy("RequiresElevation",p=>p.RequireClaim("admin","true")));
-   s.AddSingleton(store);s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddControllers(o=>o.Filters.AddService<MirrorProtection>(int.MinValue)).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
+   s.AddSingleton(store);s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
   }).Configure(a=>{a.UseRouting();a.UseAuthentication();a.UseAuthorization();a.UseEndpoints(e=>e.MapControllers());})).Start();
   _server=_host.GetTestServer();
  }
  private HttpClient Client(Guid? id=null){var c=_server.CreateClient();if(id.HasValue)c.DefaultRequestHeaders.Add("X-Test-User",id.ToString());return c;}
  private async Task<Guid> Create(HttpClient c){var r=await c.PostAsJsonAsync("/PLM/v1/me/collections",new{Name="Private"});r.EnsureSuccessStatusCode();var d=await r.Content.ReadFromJsonAsync<JsonElement>();return d.GetProperty("id").GetGuid();}
+ [Fact]public async Task PartialNativeUpdatesAreNotMistakenForUnlikesAndMetricsRequireAdmin()
+ {
+  using var c=Client(_a);
+  foreach(var (body,expected) in new[]{(new MediaBrowser.Model.Dto.UpdateUserItemDataDto{Played=true},false),(new MediaBrowser.Model.Dto.UpdateUserItemDataDto{IsFavorite=false},true),(new MediaBrowser.Model.Dto.UpdateUserItemDataDto{IsFavorite=true},true),(new MediaBrowser.Model.Dto.UpdateUserItemDataDto{PlayCount=3},false)})
+  {
+   var response=await c.PostAsJsonAsync("/Fixture/UserData",body);response.EnsureSuccessStatusCode();
+   Assert.Equal(expected,(await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("explicitFavorite").GetBoolean());
+  }
+  var favorite=await c.PostAsJsonAsync("/Fixture/FavoriteItems/"+Guid.NewGuid(),new{});
+  Assert.True((await favorite.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("explicitFavorite").GetBoolean());
+  Assert.Equal(HttpStatusCode.Forbidden,(await c.GetAsync("/PLM/v1/admin/resilience")).StatusCode);
+  c.DefaultRequestHeaders.Add("X-Test-Admin","true");
+  var result=await c.GetFromJsonAsync<JsonElement>("/PLM/v1/admin/resilience");
+  Assert.False(result.GetProperty("enabled").GetBoolean());Assert.Equal(0,result.GetProperty("protectedReferences").GetInt32());Assert.Equal(0,result.GetProperty("autoMatchableReferences").GetInt32());
+ }
  [Fact]public async Task MembershipReadDoesNotLikeAndIncludesQueueWithoutLeakingOwners()
  {
   using var a=Client(_a);using var b=Client(_b);var first=await Create(a);var second=await Create(a);var item=Guid.NewGuid();
@@ -159,6 +174,10 @@ public sealed class HttpPrivacyTests : IDisposable
 [Microsoft.AspNetCore.Authorization.Authorize]
 public sealed class NativeFixtureController : Microsoft.AspNetCore.Mvc.ControllerBase
 {
+ [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/UserData")]public IActionResult UserData(MediaBrowser.Model.Dto.UpdateUserItemDataDto body)=>
+  Ok(new{explicitFavorite=(bool)typeof(NativeFavoriteIntent).GetProperty("HasFavoriteField",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!});
+ [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/FavoriteItems/{id:guid}")]public IActionResult Favorite(Guid id)=>
+  Ok(new{explicitFavorite=(bool)typeof(NativeFavoriteIntent).GetProperty("HasFavoriteField",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!});
  [Microsoft.AspNetCore.Mvc.HttpGet("Playlists/{playlistId:guid}")]public IActionResult Read(Guid playlistId)=>Ok();
  [Microsoft.AspNetCore.Mvc.HttpPost("Playlists/{playlistId:guid}")]public IActionResult Update(Guid playlistId)=>NoContent();
  [Microsoft.AspNetCore.Mvc.HttpDelete("Items")]public IActionResult Bulk([Microsoft.AspNetCore.Mvc.FromQuery]string ids)=>NoContent();
