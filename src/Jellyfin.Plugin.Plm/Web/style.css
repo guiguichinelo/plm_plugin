@@ -34,9 +34,9 @@ button.plm-saved-heart,button.plm-saved-heart .material-icons{color:rgb(var(--ac
 .plm-ui .plm-library-action{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.5rem;min-height:2.5rem;padding:.5rem;border:0;background:transparent;color:inherit;border-radius:var(--rounding,.2em);line-height:1;text-decoration:none}
 .plm-ui .plm-library-action .material-icons{font-size:1.5rem;line-height:1}
 
-/* Match the host page gutter; do not cap the user's library or settings on wide screens. */
-.userPluginSettingsContainer:has(> .plm-library,> .plm-management){padding-inline:0}
-.plm-library,.plm-management{box-sizing:border-box;width:100%;max-width:none;margin:0;padding-inline:3.3%}
+/* Only the Favorites library expands; personal settings retain their original width. */
+.userPluginSettingsContainer:has(> .plm-library){padding-inline:0}
+.plm-library{box-sizing:border-box;width:100%;max-width:none;margin:0;padding-inline:3.3%}
 .plm-management .plm-page-header>div{min-width:0}
 .plm-management .plm-page-header h1{overflow-wrap:anywhere}
 @media(max-width:700px){.plm-management .plm-page-header{flex-wrap:wrap;align-items:flex-start}.plm-management .plm-page-header>div{flex:1 1 100%}}

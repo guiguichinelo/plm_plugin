@@ -2,11 +2,11 @@
 
 PLM adds private personal collections and Watch Later to Jellyfin. Users select existing catalog content, organize it, filter by genre/progress and remove selections without deleting original files. Native Favorites remain available alongside collections.
 
-**Beta 3: 0.1.0-beta.3, targeting Jellyfin 12.4.0 on Linux x64.** Other server versions and architectures are not validated. See [release notes](docs/releases/0.1.0-beta.3.md), [compatibility](docs/COMPATIBILITY.md) and [architecture / data lifecycle](docs/ARCHITECTURE.md).
+**Beta 4: 0.1.0-beta.4, targeting Jellyfin 12.4.0 on Linux x64.** Other server versions and architectures are not validated. See [release notes](docs/releases/0.1.0-beta.4.md), [compatibility](docs/COMPATIBILITY.md) and [architecture / data lifecycle](docs/ARCHITECTURE.md).
 
 ![PLM — Personal Library Manager](https://raw.githubusercontent.com/guiguichinelo/betterfin/main/assets/plm/thumbnail.png)
 
-Add [Betterfin's Jellyfin 12 manifest](https://raw.githubusercontent.com/guiguichinelo/betterfin/main/12/manifest.json) in **Dashboard → Plugins → Repositories**, then install **Personal Library Manager**. This catalog currently distributes the Linux x64 beta only. Install matching Plugin Pages/File Transformation dependencies first. [Download the beta](https://github.com/guiguichinelo/plm_plugin/releases/tag/v0.1.0-beta.3).
+Add [Betterfin's Jellyfin 12 manifest](https://raw.githubusercontent.com/guiguichinelo/betterfin/main/12/manifest.json) in **Dashboard → Plugins → Repositories**, then install **Personal Library Manager**. This catalog currently distributes the Linux x64 beta only. Install matching Plugin Pages/File Transformation dependencies first. [Download the beta](https://github.com/guiguichinelo/plm_plugin/releases/tag/v0.1.0-beta.4).
 
 Features implemented:
 
@@ -34,7 +34,7 @@ The package, MD5/SHA256 receipt and SHA256SUMS.txt are generated in `artifacts/`
 ## Manual beta installation
 
 1. Back up your Jellyfin configuration and PLM database. Use an isolated test instance first.
-2. Stop Jellyfin. Move any previous PLM plugin directory outside `plugins` and extract this package into `plugins/Personal Library Manager_0.1.0.3` inside its configuration directory, preserving file ownership. Keep PLM's data directory. Do not combine packages for different architectures or keep two enabled versions.
+2. Stop Jellyfin. Move any previous PLM plugin directory outside `plugins` and extract this package into `plugins/Personal Library Manager_0.1.0.4` inside its configuration directory, preserving file ownership. Keep PLM's data directory. Do not combine packages for different architectures or keep two enabled versions.
 3. Install Plugin Pages and File Transformation builds matching **12.4.0**, then start Jellyfin.
 4. Open **Favoritos** to browse Curtidos, Watch Later and private lists. List administration is also available through **Favoritos** in user preferences. The plugin administrator page contains maintenance and the opt-in switch for native mirrors.
 5. Validate privacy with two non-administrator test accounts before enabling mirrors on a populated server. Test your actual clients; support for native playlist content varies.

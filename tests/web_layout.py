@@ -18,7 +18,8 @@ with sync_playwright() as p:
     page.locator(selector).wait_for(state='visible')
     result=page.locator(selector).evaluate('e=>({width:e.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth>innerWidth+1})')
     assert not result['overflow'],(width,locale,route,result)
-    assert result['width']>=width*.9,(width,locale,route,result)
+    if route=='library':assert result['width']>=width*.9,(width,locale,route,result)
+    elif width>=1280:assert result['width']<1000,(width,locale,route,result)
  assert not errors,errors
  browser.close()
-print('PASS: library/settings fill 390/1280/2560/3440px views; Portuguese, English, German, Arabic RTL and Japanese fit without horizontal overflow')
+print('PASS: only Favorites expands at 2560/3440px; settings retain their width; narrow screens and five languages fit without horizontal overflow')
