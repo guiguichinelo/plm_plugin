@@ -23,6 +23,10 @@ with sync_playwright() as p:
     page.locator('#plm-app[data-controller]').wait_for()
     page.wait_for_function("location.hash===PLM.routes.library")
     assert page.evaluate('window.routeBeforeShell')=='#/favorites'
+    page.evaluate('()=>location.hash=PLM.routes.manage')
+    page.locator('#plm-manage[data-controller]').wait_for()
+    assert page.locator('#plm-manage .plm-eyebrow').count()==0
+    page.evaluate('()=>location.hash=PLM.routes.library')
     page.evaluate("fixture.lists.push({Id:'22222222222222222222222222222222',Name:'Lista do usuário',WatchLater:false,Revision:0});PLM.changed()")
     for locale in [*manifest['locales'],'fr-BE','zz-ZZ','pt_BR']:
         normalized=locale.replace('_','-').lower();resolved=normalized if normalized in manifest['locales'] else normalized.split('-')[0] if normalized.split('-')[0] in manifest['locales'] else 'en-us'
@@ -31,6 +35,7 @@ with sync_playwright() as p:
         page.wait_for_function('locale=>PLM.i18n.locale===locale&&PLM.i18n.loaded',arg=normalized)
         page.wait_for_function('value=>document.querySelector("#plm-search").placeholder===value',arg=values.get('PlmSearch',english['PlmSearch']))
         page.wait_for_function('value=>document.querySelector("#plm-app h1").textContent===value',arg=values.get('Favorites',english['Favorites']))
+        page.wait_for_function('value=>document.querySelector("#plm-manage h1").textContent===value',arg=values.get('PlmFavoritesSettings',english['PlmFavoritesSettings']))
         page.wait_for_function("document.querySelector('#plm-lists').textContent.includes('Lista do usuário')")
         assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),locale
         assert page.locator('#plm-search').get_attribute('class')=='emby-input searchfields-txtSearch'

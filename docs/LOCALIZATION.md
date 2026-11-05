@@ -16,6 +16,12 @@ belong in translations/<locale>.json. **This is not complete translation of all
 plugin messages into 64 languages.** Missing entries use English, never Portuguese
 for a non-Portuguese locale. The generated index reports coverage per locale.
 
+The Favorites settings heading uses a dedicated message instead of renaming
+Favorites globally. It has full English/Portuguese and additional phrase
+translations; other locales reuse the host's localized Settings and Favorites
+labels with a middle-dot separator. Incomplete host dictionaries fall back to
+English. The browser title uses the same resolved message on the settings page.
+
 Resolution order: exact normalized locale, base language, en-us. Underscores and
 case normalize to the Jellyfin form. Interface changes are observed at the host's
 resolved locale, avoiding a second user preference store. Number/date formatting

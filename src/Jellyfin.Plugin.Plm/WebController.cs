@@ -11,6 +11,8 @@ public sealed class WebController : ControllerBase
     public object Settings()=>new {playlistsDisabled=Plugin.Instance?.Configuration.DisableNativePlaylists==true};
     [AllowAnonymous][HttpGet("navigation.js")]
     public IActionResult Navigation()=>File(typeof(Plugin).Assembly.GetManifestResourceStream("Jellyfin.Plugin.Plm.Web.navigation.js")!,"application/javascript");
+    [AllowAnonymous][HttpGet("navigation-state.js")]
+    public IActionResult NavigationState()=>Resource("navigation-state.js","application/javascript");
     [AllowAnonymous][HttpGet("runtime.js")]
     public IActionResult Runtime()=>Resource("runtime.js","application/javascript");
     [AllowAnonymous][HttpGet("i18n.js")]

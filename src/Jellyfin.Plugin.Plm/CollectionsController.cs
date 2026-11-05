@@ -104,7 +104,7 @@ public sealed class CollectionsController(LibraryStore store, ICatalogAccess cat
 public sealed class AdminController(LibraryStore store) : ControllerBase
 {
     [HttpGet("health")]
-    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.2", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
+    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.3", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
     [HttpGet("maintenance/preview")]
     public object Preview() => store.PreviewCleanup(DateTimeOffset.UtcNow);
     [HttpPost("maintenance/execute")]

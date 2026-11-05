@@ -25,8 +25,10 @@ public sealed class NavigationRegistration(ILogger<NavigationRegistration> log, 
  }
  public static string TransformIndex(NavigationPayload payload)
  {
-  var html=payload.Contents??"";if(html.Contains("data-plm-navigation-script"))return html;
-  return html.Replace("</body>","<script data-plm-runtime-script src=\"../PLM/web/runtime.js?v=ux10\" defer></script><script data-plm-i18n-script src=\"../PLM/web/i18n.js?v=ux10\" defer></script><script src=\"../PLM/web/interactions.js?v=ux10\" defer></script><script src=\"../PLM/web/surface.js?v=ux10\" defer></script><script src=\"../PLM/web/providers.js?v=ux10\" defer></script><script data-plm-navigation-script src=\"../PLM/web/navigation.js?v=ux10\" defer></script></body>",StringComparison.OrdinalIgnoreCase);
+  var html=payload.Contents??"";
+  if(!html.Contains("data-plm-navigation-state-script"))html=html.Replace("</body>","<script data-plm-navigation-state-script src=\"../PLM/web/navigation-state.js?v=beta3\" defer></script></body>",StringComparison.OrdinalIgnoreCase);
+  if(html.Contains("data-plm-navigation-script"))return html;
+  return html.Replace("</body>","<script data-plm-runtime-script src=\"../PLM/web/runtime.js?v=beta3\" defer></script><script data-plm-i18n-script src=\"../PLM/web/i18n.js?v=beta3\" defer></script><script src=\"../PLM/web/interactions.js?v=beta3\" defer></script><script src=\"../PLM/web/surface.js?v=beta3\" defer></script><script src=\"../PLM/web/providers.js?v=beta3\" defer></script><script data-plm-navigation-script src=\"../PLM/web/navigation.js?v=beta3\" defer></script></body>",StringComparison.OrdinalIgnoreCase);
  }
  private void OnTaskCompleted(object? sender, TaskCompletionEventArgs args)
  {

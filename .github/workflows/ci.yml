@@ -24,6 +24,7 @@ jobs:
       - run: python tests/web_smoke.py
       - run: python tests/web_memberships.py
       - run: python tests/web_page_loader.py
+      - run: python tests/web_navigation_state.py
       - run: python tests/web_locales.py
       - shell: pwsh
         run: ./scripts/package.ps1

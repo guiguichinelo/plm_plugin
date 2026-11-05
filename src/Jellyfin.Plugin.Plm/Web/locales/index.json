@@ -4,259 +4,259 @@
   "locales": {
     "af": {
       "translated": 21,
-      "total": 154
+      "total": 155
     },
     "ar": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "be-by": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "bg-bg": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "bn-bd": {
       "translated": 14,
-      "total": 154
+      "total": 155
     },
     "ca": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "cs": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "cy": {
-      "translated": 28,
-      "total": 154
+      "translated": 29,
+      "total": 155
     },
     "da": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "de": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "el": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "en-gb": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "en-us": {
-      "translated": 154,
-      "total": 154
+      "translated": 155,
+      "total": 155
     },
     "eo": {
-      "translated": 31,
-      "total": 154
+      "translated": 32,
+      "total": 155
     },
     "es": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "es-419": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "es-ar": {
-      "translated": 35,
-      "total": 154
+      "translated": 36,
+      "total": 155
     },
     "es-do": {
       "translated": 7,
-      "total": 154
+      "total": 155
     },
     "es-mx": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "et": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "eu": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "fa": {
-      "translated": 34,
-      "total": 154
+      "translated": 35,
+      "total": 155
     },
     "fi": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "fil": {
-      "translated": 31,
-      "total": 154
+      "translated": 32,
+      "total": 155
     },
     "fr": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "fr-ca": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "gl": {
       "translated": 29,
-      "total": 154
+      "total": 155
     },
     "gsw": {
-      "translated": 18,
-      "total": 154
+      "translated": 19,
+      "total": 155
     },
     "he": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "hi-in": {
       "translated": 13,
-      "total": 154
+      "total": 155
     },
     "hr": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "hu": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "id": {
-      "translated": 34,
-      "total": 154
+      "translated": 35,
+      "total": 155
     },
     "it": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "ja": {
-      "translated": 35,
-      "total": 154
+      "translated": 36,
+      "total": 155
     },
     "kk": {
-      "translated": 31,
-      "total": 154
+      "translated": 32,
+      "total": 155
     },
     "ko": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "lt-lt": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "lv": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "mr": {
-      "translated": 26,
-      "total": 154
+      "translated": 27,
+      "total": 155
     },
     "ms": {
-      "translated": 17,
-      "total": 154
+      "translated": 18,
+      "total": 155
     },
     "nb": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "nl": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "nn": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "pl": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "pr": {
       "translated": 13,
-      "total": 154
+      "total": 155
     },
     "pt": {
-      "translated": 154,
-      "total": 154
+      "translated": 155,
+      "total": 155
     },
     "pt-br": {
-      "translated": 154,
-      "total": 154
+      "translated": 155,
+      "total": 155
     },
     "pt-pt": {
-      "translated": 154,
-      "total": 154
+      "translated": 155,
+      "total": 155
     },
     "ro": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "ru": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "sk": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "sl-si": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "sq": {
       "translated": 20,
-      "total": 154
+      "total": 155
     },
     "sv": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "ta": {
-      "translated": 34,
-      "total": 154
+      "translated": 35,
+      "total": 155
     },
     "th": {
-      "translated": 18,
-      "total": 154
+      "translated": 19,
+      "total": 155
     },
     "tr": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "uk": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "ur-pk": {
-      "translated": 32,
-      "total": 154
+      "translated": 33,
+      "total": 155
     },
     "vi": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "zh-cn": {
-      "translated": 37,
-      "total": 154
+      "translated": 38,
+      "total": 155
     },
     "zh-hk": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     },
     "zh-tw": {
-      "translated": 36,
-      "total": 154
+      "translated": 37,
+      "total": 155
     }
   }
 }

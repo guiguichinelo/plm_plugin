@@ -1,6 +1,6 @@
 (() => {
  'use strict';if(window.PLM)return;
- const version='ux10',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
+ const version='beta3',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
  const t=(...args)=>window.PLM.t(...args);
  let cacheOwner='',cache=new Map();
  const owner=()=>window.ApiClient?.getCurrentUserId()||'';

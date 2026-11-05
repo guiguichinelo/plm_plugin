@@ -44,6 +44,24 @@
     "pt": "Episódios",
     "native": "Episodes"
   },
+  "PlmFavoritesSettings": {
+    "en": "Favorites settings",
+    "pt": "Configurações dos Favoritos",
+    "nativeParts": ["Settings", "Favorites"],
+    "locales": {
+      "ar": "إعدادات المفضلة",
+      "de": "Favoriteneinstellungen",
+      "es": "Configuración de favoritos",
+      "fr": "Paramètres des favoris",
+      "it": "Impostazioni dei preferiti",
+      "ja": "お気に入りの設定",
+      "ko": "즐겨찾기 설정",
+      "nl": "Instellingen voor favorieten",
+      "ru": "Настройки избранного",
+      "zh-cn": "收藏设置",
+      "zh-tw": "我的最愛設定"
+    }
+  },
   "Favorites": {
     "en": "Favorites",
     "pt": "Favoritos",

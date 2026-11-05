@@ -56,7 +56,7 @@ def handle(route):
     if '/PLM/web/locales/' in path and name.endswith('.json') and (web/'locales'/name).is_file():
         route.fulfill(body=(web/'locales'/name).read_text(encoding='utf-8'),content_type='application/json')
         return
-    if path.startswith('/PLM/web/') and name in {'runtime.js','i18n.js','interactions.js','surface.js','providers.js','navigation.js','library.js','manage.js','style.css','collections.html','manage.html'}:
+    if path.startswith('/PLM/web/') and name in {'runtime.js','i18n.js','interactions.js','surface.js','providers.js','navigation.js','navigation-state.js','library.js','manage.js','style.css','collections.html','manage.html'}:
         mime = 'application/javascript' if name.endswith('.js') else 'text/css' if name.endswith('.css') else 'text/html; charset=utf-8'
         route.fulfill(body=(web/name).read_text(encoding='utf-8'), content_type=mime)
     elif path == '/PLM/web/settings':
