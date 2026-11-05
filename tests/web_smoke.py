@@ -11,6 +11,11 @@ with sync_playwright() as p:
     page.goto('http://plm-fixture.test/web/#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html')
     page.get_by_text('Esta lista está vazia',exact=True).wait_for()
     assert page.get_by_text('SEU ESPAÇO',exact=True).count()==0
+    for control in ['#plm-create-list','.plm-trash-link']:
+        assert 'paper-icon-button-light' in page.locator(control).get_attribute('class')
+        assert 'plm-icon-button' not in page.locator(control).get_attribute('class')
+        assert page.locator(control).evaluate('e=>getComputedStyle(e).backgroundColor')=='rgba(0, 0, 0, 0)'
+        assert page.locator(control).get_attribute('aria-label')
     page.locator('#fixture-native-heart').click()
     picker=page.locator('.plm-picker');picker.get_by_role('checkbox',name='Curtidos',exact=True).check()
     page.wait_for_function('fixture.favorite');picker.get_by_role('button',name='Fechar',exact=True).click()

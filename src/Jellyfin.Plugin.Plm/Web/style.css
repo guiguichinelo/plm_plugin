@@ -29,3 +29,7 @@
 :is([data-theme="light"],[data-theme="appletv"]) .plm-ui .plm-cover .material-icons{color:var(--jf-palette-primary-contrastText,#000)}
 
 button.plm-saved-heart,button.plm-saved-heart .material-icons{color:rgb(var(--accent,0,164,220))!important}
+
+/* Library actions use the host icon-button treatment instead of media-overlay buttons. */
+.plm-ui .plm-library-action{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.5rem;min-height:2.5rem;padding:.5rem;border:0;background:transparent;color:inherit;border-radius:var(--rounding,.2em);line-height:1;text-decoration:none}
+.plm-ui .plm-library-action .material-icons{font-size:1.5rem;line-height:1}

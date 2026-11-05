@@ -8,7 +8,7 @@
  async function create(){const name=await P.inputDialog(P.t("PlmListname"));if(!name)return;const c=await P.call('collections','POST',{name});selected=c.id;page=0;filters.sort='custom';P.changed();}
  function removed(id){if(selected===id){selected='liked';filters.sort='name';page=0;}}
  function sidebar(){
-  $('lists').replaceChildren();const heading=P.el('div','plm-sidebar-head'),plus=P.button('',safe(create),'plm-icon-button');plus.title=P.t("PlmCreatealist");plus.setAttribute('aria-label',P.t("PlmCreatealist"));plus.append(P.icon('add'));heading.append(P.el('p','plm-sidebar-label',P.t("PlmYourlibrary")),plus);$('lists').append(heading);
+  $('lists').replaceChildren();const heading=P.el('div','plm-sidebar-head'),plus=P.button('',safe(create),'paper-icon-button-light plm-library-action');plus.id='plm-create-list';plus.title=P.t("PlmCreatealist");plus.setAttribute('aria-label',P.t("PlmCreatealist"));plus.setAttribute('aria-haspopup','dialog');plus.append(P.icon('add'));heading.append(P.el('p','plm-sidebar-label',P.t("PlmYourlibrary")),plus);$('lists').append(heading);
   const choices=[{id:'liked',name:P.t("PlmLiked")},...lists];
   for(const c of choices){const row=P.el('div','plm-list-row'),b=P.button('',()=>{if(selected!==c.id){selected=c.id;page=0;filters.sort=c.id==='liked'?'name':'custom';sidebar();load();}},'plm-list-button'),glyph=P.icon(c.id==='liked'?'favorite':c.watchLater?'watch_later':'queue');b.setAttribute('aria-current',String(selected===c.id));b.append(glyph,P.el('span','',c.id==='liked'?P.t("PlmLiked"):P.name(c)));
    row.oncontextmenu=e=>P.listMenu(e,c,removed);b.onkeydown=e=>{if(e.key==='ContextMenu'||e.shiftKey&&e.key==='F10')P.listMenu(e,c,removed);};
