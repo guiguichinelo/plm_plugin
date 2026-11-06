@@ -171,7 +171,7 @@ public sealed class LibraryStore
     public IReadOnlyList<Mirror> FindMirrors(IEnumerable<Guid> playlistIds)
     {
         using var db = Open(); var result = new List<Mirror>();
-        foreach (var batch in playlistIds.Distinct().Chunk(200))
+        foreach (var batch in playlistIds.Where(id => id != Guid.Empty).Distinct().Chunk(200))
         {
             var parameters = batch.Select((id, index) => ("$p" + index, (object?)Key(id))).ToArray();
             using var c = Command(db, null, "SELECT c.id,c.owner,m.media_type,m.playlist_id,m.revision FROM mirrors m JOIN collections c ON c.id=m.collection_id WHERE m.playlist_id IN (" + string.Join(',', parameters.Select(p => p.Item1)) + ")", parameters);

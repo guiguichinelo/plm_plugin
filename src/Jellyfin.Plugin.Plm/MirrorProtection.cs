@@ -10,7 +10,9 @@ public sealed class MirrorProtection(LibraryStore store, MirrorMutationGate gate
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if(Plugin.Instance?.Configuration.DisableNativePlaylists==true&&context.ActionDescriptor.RouteValues.TryGetValue("controller",out var nativeController)&&nativeController=="Playlists")
+        context.ActionDescriptor.RouteValues.TryGetValue("controller",out var nativeController);
+        context.ActionDescriptor.RouteValues.TryGetValue("action",out var nativeAction);
+        if(Plugin.Instance?.Configuration.DisableNativePlaylists==true&&nativeController=="Playlists")
         {context.Result=new ObjectResult(new{error="playlists_disabled",message="Use Minha coleção."}){StatusCode=403};return;}
         if (context.Controller is CollectionsController or AdminController or WebController) { await next(); return; }
         var references = new HashSet<Guid>();
@@ -33,9 +35,17 @@ public sealed class MirrorProtection(LibraryStore store, MirrorMutationGate gate
                     else if (nested is string text) Parse(text);
                 }
         }
+        // Other plugins legitimately use Guid.Empty as a "clear selection" sentinel.
+        // It cannot identify a PLM mirror and must not be passed to the store's key validation.
+        references.Remove(Guid.Empty);
         if (references.Count == 0) { await next(); return; }
         var writing = !HttpMethods.IsGet(context.HttpContext.Request.Method) && !HttpMethods.IsHead(context.HttpContext.Request.Method);
-        if (writing) await gate.Semaphore.WaitAsync(context.HttpContext.RequestAborted);
+        // UserData updates cannot publish, delete or reassign a playlist. Still check
+        // mirror ownership, but do not serialize unrelated users' progress writes.
+        // All other native writes retain the creation/recovery mutation barrier.
+        var userDataUpdate = nativeController == "UserData" && nativeAction == "UpdateItemUserData";
+        var needsMutationGate = writing && !userDataUpdate;
+        if (needsMutationGate) await gate.Semaphore.WaitAsync(context.HttpContext.RequestAborted);
         try
         {
             var affected = store.FindMirrors(references).ToArray();
@@ -45,12 +55,12 @@ public sealed class MirrorProtection(LibraryStore store, MirrorMutationGate gate
                 if (affected.Any(m => m.Owner != owner)) { context.Result = new NotFoundResult(); return; }
                 var request = context.HttpContext.Request;
                 context.ActionDescriptor.RouteValues.TryGetValue("controller", out var controller);
-                var progress = controller is "Playstate" or "UserLibrary";
+                var progress = userDataUpdate || controller is "Playstate" or "UserLibrary";
                 if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method) && !progress)
                 { context.Result = new ConflictObjectResult(new { error = "plm_managed_playlist", message = "Manage this collection through PLM." }); return; }
             }
             await next();
         }
-        finally { if (writing) gate.Semaphore.Release(); }
+        finally { if (needsMutationGate) gate.Semaphore.Release(); }
     }
 }

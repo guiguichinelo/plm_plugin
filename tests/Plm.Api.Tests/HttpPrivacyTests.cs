@@ -51,7 +51,7 @@ public sealed class HttpPrivacyTests : IDisposable
   _host=new HostBuilder().ConfigureWebHost(web=>web.UseTestServer().ConfigureServices(s=>{
    s.AddAuthentication("fixture").AddScheme<AuthenticationSchemeOptions,FixtureAuth>("fixture",_=>{});
    s.AddAuthorization(o=>o.AddPolicy("RequiresElevation",p=>p.RequireClaim("admin","true")));
-   s.AddSingleton(store);s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
+   s.AddSingleton(store);s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<ProgressBarrier>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
   }).Configure(a=>{a.UseRouting();a.UseAuthentication();a.UseAuthorization();a.UseEndpoints(e=>e.MapControllers());})).Start();
   _server=_host.GetTestServer();
  }
@@ -123,6 +123,32 @@ public sealed class HttpPrivacyTests : IDisposable
   Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync("/Items/Delete",new{Ids=new[]{playlist}})).StatusCode);
   Assert.Equal(HttpStatusCode.NoContent,(await a.PostAsJsonAsync($"/Playlists/{Guid.NewGuid()}",new{IsPublic=true})).StatusCode);
  }
+ [Fact]public async Task EmptySelectionFromAnotherPluginDoesNotFailOrBypassMirrorPrivacy()
+ {
+  var store=_host.Services.GetRequiredService<LibraryStore>();var collection=store.Create(_a,"Mirror");var playlist=Guid.NewGuid();store.SaveMirror(collection.Id,"Video",playlist,0);
+  Assert.Empty(store.FindMirrors([Guid.Empty]));
+  Assert.Equal(playlist,Assert.Single(store.FindMirrors([Guid.Empty,playlist,Guid.Empty])).PlaylistId);
+  using var a=Client(_a);using var b=Client(_b);
+  Assert.Equal(HttpStatusCode.NoContent,(await a.GetAsync($"/Fixture/SourceCollection/{Guid.Empty}")).StatusCode);
+  Assert.Equal(HttpStatusCode.NoContent,(await a.PostAsJsonAsync("/Items/Delete",new{Ids=new[]{Guid.Empty,Guid.NewGuid()}})).StatusCode);
+  Assert.Equal(HttpStatusCode.NotFound,(await b.PostAsJsonAsync("/Items/Delete",new{Ids=new[]{Guid.Empty,playlist}})).StatusCode);
+  Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync("/Items/Delete",new{Ids=new[]{Guid.Empty,playlist}})).StatusCode);
+ }
+ [Fact]public async Task IndependentProgressWritesCanEnterTogetherWithoutWeakeningMirrorPrivacy()
+ {
+  using var a=Client(_a);using var b=Client(_b);
+  var barrier=_host.Services.GetRequiredService<ProgressBarrier>();
+  var first=a.PostAsJsonAsync($"/UserItems/{Guid.NewGuid()}/UserData",new{PlaybackPositionTicks=10});
+  await barrier.First.Task.WaitAsync(TimeSpan.FromSeconds(3));
+  var second=b.PostAsJsonAsync($"/UserItems/{Guid.NewGuid()}/UserData",new{PlaybackPositionTicks=20});
+  try { await barrier.Both.Task.WaitAsync(TimeSpan.FromSeconds(3)); }
+  finally { barrier.Release.TrySetResult(); }
+  Assert.Equal(HttpStatusCode.OK,(await first).StatusCode);Assert.Equal(HttpStatusCode.OK,(await second).StatusCode);
+  var store=_host.Services.GetRequiredService<LibraryStore>();var c=store.Create(_a,"Mirror");var playlist=Guid.NewGuid();store.SaveMirror(c.Id,"Video",playlist,0);
+  Assert.Equal(HttpStatusCode.NotFound,(await b.PostAsJsonAsync($"/UserItems/{playlist}/UserData",new{PlaybackPositionTicks=30})).StatusCode);
+  Assert.Equal(HttpStatusCode.OK,(await a.PostAsJsonAsync($"/UserItems/{playlist}/UserData",new{PlaybackPositionTicks=40})).StatusCode);
+  Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync($"/Playlists/{playlist}",new{IsPublic=true})).StatusCode);
+ }
  [Fact]public async Task AdminBackupIsConsistentButAdminCannotReadOtherOwnersCollections()
  {
   using var a=Client(_a);using var admin=Client(_b);admin.DefaultRequestHeaders.Add("X-Test-Admin","true");var id=await Create(a);
@@ -174,6 +200,7 @@ public sealed class HttpPrivacyTests : IDisposable
 [Microsoft.AspNetCore.Authorization.Authorize]
 public sealed class NativeFixtureController : Microsoft.AspNetCore.Mvc.ControllerBase
 {
+ [Microsoft.AspNetCore.Mvc.HttpGet("Fixture/SourceCollection/{collectionId:guid}")]public IActionResult SourceCollection(Guid collectionId)=>NoContent();
  [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/UserData")]public IActionResult UserData(MediaBrowser.Model.Dto.UpdateUserItemDataDto body)=>
   Ok(new{explicitFavorite=(bool)typeof(NativeFavoriteIntent).GetProperty("HasFavoriteField",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!});
  [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/FavoriteItems/{id:guid}")]public IActionResult Favorite(Guid id)=>
@@ -184,3 +211,24 @@ public sealed class NativeFixtureController : Microsoft.AspNetCore.Mvc.Controlle
  [Microsoft.AspNetCore.Mvc.HttpPost("Items/Delete")]public IActionResult BulkBody(BulkRequest body)=>NoContent();
 }
 public sealed record BulkRequest(Guid[] Ids);
+
+public sealed class ProgressBarrier
+{
+ private int _entered;
+ public TaskCompletionSource First { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+ public TaskCompletionSource Both { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+ public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+ public async Task Enter(CancellationToken cancellation)
+ {
+  var entered=Interlocked.Increment(ref _entered);First.TrySetResult();if(entered>=2)Both.TrySetResult();
+  await Release.Task.WaitAsync(cancellation);
+ }
+}
+[Microsoft.AspNetCore.Mvc.ApiController]
+[Microsoft.AspNetCore.Authorization.Authorize]
+public sealed class UserDataController(ProgressBarrier barrier) : Microsoft.AspNetCore.Mvc.ControllerBase
+{
+ [Microsoft.AspNetCore.Mvc.HttpPost("UserItems/{itemId:guid}/UserData")]
+ public async Task<IActionResult> UpdateItemUserData(Guid itemId,MediaBrowser.Model.Dto.UpdateUserItemDataDto body)
+ {await barrier.Enter(HttpContext.RequestAborted);return Ok();}
+}
