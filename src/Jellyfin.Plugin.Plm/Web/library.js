@@ -6,6 +6,20 @@
  selected=new URL(location.href.split('#')[1]||'/',location.origin).searchParams.get('list')||'liked';if(selected!=='liked')filters.sort='custom';
  const safe=work=>async()=>{try{await work();}catch{status(P.t("PlmCouldnotcompletethisactionRefreshandtryagain"),true);}};
  async function create(){const name=await P.inputDialog(P.t("PlmListname"));if(!name)return;const c=await P.call('collections','POST',{name});selected=c.id;page=0;filters.sort='custom';P.changed();}
+ async function removeUnavailable(item,button){
+  const collection=selected;if(collection==='liked')return;button.disabled=true;
+  try{
+   const fresh=await P.call('collections/'+collection+'?limit=1');
+   await P.call('collections/'+collection+'/items/'+encodeURIComponent(item.ItemId)+'?revision='+fresh.collection.revision,'DELETE');
+   P.changed();
+  }catch(e){status(e.status===409?P.t('PlmThislistchangedinanothersessionRefreshandtryagain'):P.t('PlmCouldnotcompletethisactionTryagain'),true);}
+  finally{if(button.isConnected)button.disabled=false;}
+ }
+ function unavailableCard(item){
+  const card=P.el('article','plm-card plm-unavailable-card'),art=P.el('div','plm-art');card.dataset.id=item.ItemId;art.append(P.icon('lock'));
+  const actions=P.el('div','plm-card-actions'),remove=P.button('',()=>removeUnavailable(item,remove),'plm-icon-button plm-remove-unavailable');remove.title=P.t('PlmRemovefromlist');remove.setAttribute('aria-label',P.t('PlmRemovefromlist')+(item.Name?' — '+item.Name:''));remove.append(P.icon('remove_circle_outline'));actions.append(remove);art.append(actions);
+  card.append(art,P.el('p','plm-card-title',item.Name||P.t('PlmContentunavailable')),P.el('p','plm-card-subtitle',P.t(item.Name?'PlmContentunavailable':'PlmYourselectionhasbeenkept')));return card;
+ }
  function removed(id){if(selected===id){selected='liked';filters.sort='name';page=0;}}
  function sidebar(){
   $('lists').replaceChildren();const heading=P.el('div','plm-sidebar-head'),plus=P.button('',safe(create),'paper-icon-button-light plm-library-action');plus.id='plm-create-list';plus.title=P.t("PlmCreatealist");plus.setAttribute('aria-label',P.t("PlmCreatealist"));plus.setAttribute('aria-haspopup','dialog');plus.append(P.icon('add'));heading.append(P.el('p','plm-sidebar-label',P.t("PlmYourlibrary")),plus);$('lists').append(heading);
@@ -35,7 +49,7 @@
    $('list-title').textContent=selected==='liked'?P.t("PlmLiked"):P.name(c);$('list-description').textContent=selected==='liked'?P.t("PlmContentsavedtoLiked"):c.watchLater?P.t("PlmMoviesshowsandothercontenttowatchlater"):'';$('count').textContent=P.i18n.count(total);$('media').replaceChildren();
    await cover(c,items,ticket);if(ticket!==request||!alive())return;
    if(!items.length){const active=filters.genres.length||filters.search||filters.progress||filters.types||filters.year||filters.favorite!=='';P.empty($('media'),active?P.t("PlmNocontentmatchesthesefilters"):P.t("PlmThislistisempty"),active?P.t("PlmChangeorclearthefilterstocontinue"):P.t("PlmUsethehearttochooseLikedoralistTheclockaddsdirectlytoWatchLater"));}
-   else{const cards=P.container(view==='list'?'plm-list-view':'');for(const item of items){if(item.unavailable){const unavailable=P.el('article','plm-card');const art=P.el('div','plm-art');art.append(P.icon('lock'));unavailable.append(art,P.el('p','plm-card-title',P.t("PlmContentunavailable")),P.el('p','plm-card-subtitle',P.t("PlmYourselectionhasbeenkept")));cards.append(unavailable);}else cards.append(P.card(item));}$('media').append(cards);}
+   else{const cards=P.container(view==='list'?'plm-list-view':'');for(const item of items)cards.append(item.unavailable?unavailableCard(item):P.card(item));$('media').append(cards);}
    $('previous').disabled=page===0;$('next').disabled=(page+1)*size>=total;$('page-number').textContent=P.t('PlmPageOf',P.i18n.number(page+1),P.i18n.number(Math.max(1,Math.ceil(total/size))));status('');
   }catch(e){if(ticket===request)status(P.t("PlmCouldnotloadthislistTryrefreshingthepage"),true);}finally{if(ticket===request&&alive())$('media').removeAttribute('aria-busy');}
  }

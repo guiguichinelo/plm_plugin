@@ -1,12 +1,12 @@
 (() => {
  'use strict';if(window.PLM)return;
- const version='beta5',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
+ const version='beta8',routes={library:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fcollections.html',manage:'#/userpluginsettings.html?pageUrl=%2FPLM%2Fweb%2Fmanage.html'};
  const t=(...args)=>window.PLM.t(...args);
  let cacheOwner='',cache=new Map();
  const owner=()=>window.ApiClient?.getCurrentUserId()||'';
  const api=()=>window.ApiClient;
  const normalize=x=>Array.isArray(x)?x.map(normalize):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).map(([k,v])=>[k[0].toLowerCase()+k.slice(1),normalize(v)])):x;
- const call=(path,method='GET',body)=>{const id=owner();return api().ajax({url:api().getUrl('PLM/v1/me/'+path),type:method,contentType:'application/json',dataType:method==='GET'||method==='POST'?'json':undefined,data:body===undefined?undefined:JSON.stringify(body)}).then(value=>{if(id!==owner())throw Error('session_changed');return normalize(value);});};
+ const call=(path,method='GET',body)=>{const id=owner();return api().ajax({url:api().getUrl('PLM/v1/me/'+path+(path.includes('?')?'&':'?')+'groupVersions=true'),type:method,contentType:'application/json',dataType:method==='GET'||method==='POST'?'json':undefined,data:body===undefined?undefined:JSON.stringify(body)}).then(value=>{if(id!==owner())throw Error('session_changed');return normalize(value);});};
  const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
  const button=(label,work,cls='plm-button')=>{const b=el('button',cls,label);b.type='button';if(work)b.onclick=work;return b;};
  const icon=name=>{const s=el('span','material-icons',name);s.setAttribute('aria-hidden','true');return s;};
@@ -76,11 +76,11 @@
   try{
    const memberships=await call('items/'+media.Id+'/memberships');if(user!==owner()||!d.isConnected){d.close();return;}
    const liked=row(t("PlmLiked"),!!media.UserData?.IsFavorite,value=>favorite(media,value),'favorite');
-   for(const m of memberships){const c=m.collection;row(name(c),m.contains,async value=>{if(value)await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});else await call('collections/'+c.id+'/items/'+media.Id+'?revision='+c.revision,'DELETE');c.revision++;},c.watchLater?'watch_later':'queue');}
+   for(const m of memberships){const c=m.collection;row(name(c),m.contains,async value=>{if(value)await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});else if(m.selectionIds)await call('collections/'+c.id+'/version-groups/remove','POST',{revision:c.revision,displayItemId:m.displayItemId,selectionIds:m.selectionIds});else await call('collections/'+c.id+'/items/'+media.Id+'?revision='+c.revision,'DELETE');c.revision=(await call('collections')).find(x=>x.id===c.id).revision;},c.watchLater?'watch_later':'queue');}
    const create=button(t("PlmNewlist"),async()=>{const label=await inputDialog(t("PlmListname"));if(!label)return;create.disabled=true;try{const c=await call('collections','POST',{name:label});await call('collections/'+c.id+'/items','POST',{itemId:media.Id,revision:c.revision});changed();d.close();picker(media);}catch{status.textContent=t('PlmCouldnotsaveTryagain');}finally{create.disabled=false;}});d.append(create);status.textContent=t("PlmChoosethelistsforthiscontent");
   }catch{status.textContent=t("PlmCouldnotloadyourlists");}
  }
- async function entries(id,{page=0,genre='',progress='',limit=40,trash=false}={}){const query=new URLSearchParams({startIndex:String(page*limit),limit:String(limit),genre,progress,trash:String(trash)});const result=await call('collections/'+id+'?'+query);const values=await map(result.items,async e=>({...e,native:e.media.status==='catalogued'?await item(e.itemId):null}));return {...result,items:values};}
+ async function entries(id,{page=0,genre='',progress='',limit=40,trash=false}={}){const query=new URLSearchParams({startIndex:String(page*limit),limit:String(limit),genre,progress,trash:String(trash)});const result=await call('collections/'+id+'?'+query);const values=await map(result.items,async e=>({...e,native:e.media.status==='catalogued'?await item(e.displayItemId||e.itemId):null}));return {...result,items:values};}
  async function watchCandidates(){
   const c=await call('watch-later','POST');const data=await entries(c.id,{limit:100,progress:'unplayed'});const resolved=await map(data.items,async e=>{
    const media=e.native;if(!media||media.UserData?.Played)return null;

@@ -59,7 +59,8 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
         lock (_gate)
         {
             var user = users.GetUserById(owner); var item = library.GetItemById(id);
-            if (user is null || item is null || !item.IsVisibleStandalone(user) || !Supported.Contains(item.GetType().Name)) return;
+            if (user is null || item is null || !Supported.Contains(item.GetType().Name)) return;
+            if (!item.IsVisibleStandalone(user) && !(item is Video && new CatalogAccess(library,users,data).Displays(owner,[id]).ContainsKey(id))) return;
             memory.Remember(owner, Identity(item));
         }
     }

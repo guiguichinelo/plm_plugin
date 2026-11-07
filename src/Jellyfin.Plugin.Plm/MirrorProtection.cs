@@ -40,11 +40,15 @@ public sealed class MirrorProtection(LibraryStore store, MirrorMutationGate gate
         references.Remove(Guid.Empty);
         if (references.Count == 0) { await next(); return; }
         var writing = !HttpMethods.IsGet(context.HttpContext.Request.Method) && !HttpMethods.IsHead(context.HttpContext.Request.Method);
-        // UserData updates cannot publish, delete or reassign a playlist. Still check
-        // mirror ownership, but do not serialize unrelated users' progress writes.
-        // All other native writes retain the creation/recovery mutation barrier.
+        // Only structural item/playlist writes can race mirror creation/recovery.
+        // A slow image download, playback probe or metadata lookup must never
+        // hold up unrelated commands such as stopping a scheduled task.
+        // Existing mirror ownership is still checked below for every route.
         var userDataUpdate = nativeController == "UserData" && nativeAction == "UpdateItemUserData";
-        var needsMutationGate = writing && !userDataUpdate;
+        var configuration = Plugin.Instance?.Configuration;
+        var canCreateMirrors = configuration is null || (configuration.EnableMirrors && !configuration.DisableNativePlaylists);
+        var structuralWrite = nativeController is "Items" or "ItemUpdate" or "Playlists";
+        var needsMutationGate = writing && structuralWrite && canCreateMirrors;
         if (needsMutationGate) await gate.Semaphore.WaitAsync(context.HttpContext.RequestAborted);
         try
         {

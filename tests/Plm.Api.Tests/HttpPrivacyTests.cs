@@ -33,9 +33,12 @@ public sealed class FixtureAuth(IOptionsMonitor<AuthenticationSchemeOptions> opt
 public sealed class FixtureCatalog : ICatalogAccess
 {
  public readonly HashSet<(Guid Owner, Guid Item)> Favorites = [];
+ public readonly HashSet<Guid> Unavailable = [];
+ public readonly Dictionary<Guid,Guid> Aliases = [];
+ public IReadOnlyDictionary<Guid,Guid> Displays(Guid owner,IReadOnlyList<Guid> ids)=>ids.Distinct().Where(id=>!Unavailable.Contains(id)).ToDictionary(id=>id,id=>Aliases.GetValueOrDefault(id,id));
  public void EnsureFavorite(Guid owner, Guid id) => Favorites.Add((owner, id));
- public MediaCard Resolve(Guid owner,Guid id)=>new(id,"catalogued","Example","Movie",["Drama"]);
- public IReadOnlyDictionary<Guid,MediaCard> ResolveMany(Guid owner,IReadOnlyList<Guid> ids)=>ids.ToDictionary(id=>id,id=>Resolve(owner,id));
+ public MediaCard Resolve(Guid owner,Guid id)=>Unavailable.Contains(id)?new(id,"unavailable",null,null,[]):new(id,"catalogued","Example","Movie",["Drama"]);
+ public IReadOnlyDictionary<Guid,MediaCard> ResolveMany(Guid owner,IReadOnlyList<Guid> ids)=>ids.Where(id=>!Unavailable.Contains(id)).ToDictionary(id=>id,id=>Resolve(owner,id));
  public CatalogPage Query(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int start,int limit){var result=ids.Select(id=>Resolve(owner,id)).Where(m=>filter.Genres.Length==0||filter.Genres.Any(g=>m.Genres.Contains(g))).ToArray();return new(result.Length,result.Skip(start).Take(limit).ToArray());}
 }
 
@@ -51,7 +54,7 @@ public sealed class HttpPrivacyTests : IDisposable
   _host=new HostBuilder().ConfigureWebHost(web=>web.UseTestServer().ConfigureServices(s=>{
    s.AddAuthentication("fixture").AddScheme<AuthenticationSchemeOptions,FixtureAuth>("fixture",_=>{});
    s.AddAuthorization(o=>o.AddPolicy("RequiresElevation",p=>p.RequireClaim("admin","true")));
-   s.AddSingleton(store);s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<ProgressBarrier>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
+   s.AddSingleton(store);s.AddSingleton(new CatalogResilienceStore(Path.Combine(_path,"plm.db")));s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<ProgressBarrier>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
   }).Configure(a=>{a.UseRouting();a.UseAuthentication();a.UseAuthorization();a.UseEndpoints(e=>e.MapControllers());})).Start();
   _server=_host.GetTestServer();
  }
@@ -149,6 +152,63 @@ public sealed class HttpPrivacyTests : IDisposable
   Assert.Equal(HttpStatusCode.OK,(await a.PostAsJsonAsync($"/UserItems/{playlist}/UserData",new{PlaybackPositionTicks=40})).StatusCode);
   Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync($"/Playlists/{playlist}",new{IsPublic=true})).StatusCode);
  }
+ [Fact]public async Task SlowRemoteImageDoesNotBlockTaskCancellationOrProgress()
+ {
+  using var a=Client(_a);using var b=Client(_b);
+  var barrier=_host.Services.GetRequiredService<ProgressBarrier>();
+  var image=a.PostAsync($"/Fixture/RemoteImages/{Guid.NewGuid()}",null);
+  await barrier.First.Task.WaitAsync(TimeSpan.FromSeconds(3));
+  try
+  {
+   var cancel=await b.DeleteAsync($"/Fixture/Tasks/{Guid.NewGuid()}").WaitAsync(TimeSpan.FromSeconds(3));
+   Assert.Equal(HttpStatusCode.NoContent,cancel.StatusCode);
+   var progress=b.PostAsJsonAsync($"/UserItems/{Guid.NewGuid()}/UserData",new{PlaybackPositionTicks=10});
+   await barrier.Both.Task.WaitAsync(TimeSpan.FromSeconds(3));
+   barrier.Release.TrySetResult();Assert.Equal(HttpStatusCode.OK,(await progress).StatusCode);
+  }
+  finally { barrier.Release.TrySetResult(); }
+  Assert.Equal(HttpStatusCode.NoContent,(await image).StatusCode);
+ }
+ [Fact]public async Task CreationBarrierDoesNotBlockTaskCancellationButStillProtectsNewMirrors()
+ {
+  using var a=Client(_a);var gate=_host.Services.GetRequiredService<MirrorMutationGate>();
+  var store=_host.Services.GetRequiredService<LibraryStore>();var collection=store.Create(_a,"Mirror");var item=Guid.NewGuid();
+  await gate.Semaphore.WaitAsync();
+  Task<HttpResponseMessage>? deletion=null;
+  try
+  {
+   var cancel=await a.DeleteAsync($"/Fixture/Tasks/{Guid.NewGuid()}").WaitAsync(TimeSpan.FromSeconds(3));
+   Assert.Equal(HttpStatusCode.NoContent,cancel.StatusCode);
+   deletion=a.DeleteAsync($"/Fixture/Items/{item}");
+   Assert.NotSame(deletion,await Task.WhenAny(deletion,Task.Delay(100)));
+   store.SaveMirror(collection.Id,"Video",item,0);
+  }
+  finally { gate.Semaphore.Release(); }
+  Assert.Equal(HttpStatusCode.Conflict,(await deletion!).StatusCode);
+  using var b=Client(_b);Assert.Equal(HttpStatusCode.NotFound,(await b.DeleteAsync($"/Fixture/Items/{item}")).StatusCode);
+ }
+ [Fact]public async Task UnavailableSelectionsCanBeRemovedRestoredAndDoNotReappearAfterRebind()
+ {
+  using var a=Client(_a);using var b=Client(_b);var first=await Create(a);var second=await Create(a);var item=Guid.NewGuid();
+  var store=_host.Services.GetRequiredService<LibraryStore>();store.Add(_a,first,item,0);store.Add(_a,second,item,0);
+  ((FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>()).Unavailable.Add(item);
+  var memory=_host.Services.GetRequiredService<CatalogResilienceStore>();
+  var identity=new CatalogIdentity(item,"Movie","Remembered title","/fixture/film.mkv",2020,new(){["imdb"]="tt1234567"},null,null);
+  var remembered=memory.Remember(_a,identity);
+  var page=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{first}");
+  var media=page.GetProperty("items")[0].GetProperty("media");Assert.Equal("unavailable",media.GetProperty("status").GetString());Assert.Equal("Remembered title",media.GetProperty("name").GetString());
+  Assert.Equal(HttpStatusCode.NotFound,(await b.DeleteAsync($"/PLM/v1/me/collections/{first}/items/{item}?revision=1")).StatusCode);
+  Assert.Equal(HttpStatusCode.NoContent,(await a.DeleteAsync($"/PLM/v1/me/collections/{first}/items/{item}?revision=1")).StatusCode);
+  Assert.Empty(store.Get(_a,first).Items);Assert.Single(store.Get(_a,second).Items);
+  Assert.Equal(HttpStatusCode.Conflict,(await a.DeleteAsync($"/PLM/v1/me/collections/{first}/items/{item}?revision=1")).StatusCode);
+  var replacement=Guid.NewGuid();Assert.True(memory.Rebind(remembered,identity with{ItemId=replacement}));
+  Assert.Empty(store.Get(_a,first).Items);Assert.NotNull(Assert.Single(store.Get(_a,first,true).Items).DeletedAt);
+  Assert.Equal(HttpStatusCode.NoContent,(await a.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/items/{replacement}/restore",new{Revision=store.Get(_a,first).Collection.Revision})).StatusCode);
+  Assert.Single(store.Get(_a,first).Items);
+  var other=store.Create(_b,"Other");store.Add(_b,other.Id,item,0);
+  var hidden=await b.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{other.Id}");
+  Assert.Equal(JsonValueKind.Null,hidden.GetProperty("items")[0].GetProperty("media").GetProperty("name").ValueKind);
+ }
  [Fact]public async Task AdminBackupIsConsistentButAdminCannotReadOtherOwnersCollections()
  {
   using var a=Client(_a);using var admin=Client(_b);admin.DefaultRequestHeaders.Add("X-Test-Admin","true");var id=await Create(a);
@@ -193,6 +253,47 @@ public sealed class HttpPrivacyTests : IDisposable
   var english=await c.GetFromJsonAsync<JsonElement>("/PLM/web/locales/en-us.json");Assert.Equal("Search",english.GetProperty("PlmSearch").GetString());
   Assert.Equal(HttpStatusCode.OK,(await c.GetAsync("/PLM/web/locales/ar.json")).StatusCode);Assert.Equal(HttpStatusCode.NotFound,(await c.GetAsync("/PLM/web/locales/unknown.json")).StatusCode);
  }
+ [Theory][InlineData(false)][InlineData(true)]
+ public async Task VersionGroupsPreserveSelectionsAndRemoveAtomically(bool split)
+ {
+  using var a=Client(_a);using var b=Client(_b);var first=await Create(a);var second=await Create(a);var original=Guid.NewGuid();var primary=Guid.NewGuid();
+  var store=_host.Services.GetRequiredService<LibraryStore>();var fixture=(FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>();
+  fixture.Aliases[original]=primary;store.Add(_a,first,original,0);store.Add(_a,first,primary,1);store.Add(_a,second,original,0);
+  var page=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{first}?groupVersions=true&limit=1");
+  Assert.Equal(1,page.GetProperty("totalRecordCount").GetInt32());Assert.Equal(2,page.GetProperty("items")[0].GetProperty("selectionIds").GetArrayLength());
+  var raw=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{first}");Assert.Equal(2,raw.GetProperty("totalRecordCount").GetInt32());
+  var saved=await a.GetFromJsonAsync<Guid[]>($"/PLM/v1/me/items/memberships?groupVersions=true&ids={primary}");Assert.Contains(primary,saved!);
+  Assert.Empty(await b.GetFromJsonAsync<Guid[]>($"/PLM/v1/me/items/memberships?groupVersions=true&ids={primary}")??[]);
+  var body=new{Revision=2,DisplayItemId=primary,SelectionIds=new[]{original,primary}};
+  Assert.Equal(HttpStatusCode.NotFound,(await b.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/version-groups/remove",body)).StatusCode);
+  if(split)fixture.Aliases.Clear();
+  var response=await a.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/version-groups/remove",body);
+  Assert.Equal(split?HttpStatusCode.Conflict:HttpStatusCode.OK,response.StatusCode);
+  if(split){Assert.Equal(2,store.Get(_a,first).Items.Count);return;}
+  Assert.Empty(store.Get(_a,first).Items);Assert.Equal(2,store.Get(_a,first,true).Items.Count);Assert.Single(store.Get(_a,second).Items);Assert.Empty(fixture.Favorites);
+  Assert.Equal(HttpStatusCode.Conflict,(await a.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/version-groups/remove",body)).StatusCode);
+  (await a.PostAsJsonAsync($"/PLM/v1/me/collections/{first}/version-groups/restore",new{Revision=3,DisplayItemId=primary,SelectionIds=new[]{original,primary}})).EnsureSuccessStatusCode();
+  fixture.Aliases.Clear();var separated=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{first}?groupVersions=true");Assert.Equal(2,separated.GetProperty("totalRecordCount").GetInt32());
+ }
+ [Fact]public async Task GroupAddAndWatchAreIdempotentAcrossVersions()
+ {
+  using var a=Client(_a);var id=await Create(a);var old=Guid.NewGuid();var primary=Guid.NewGuid();var fixture=(FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>();fixture.Aliases[old]=primary;
+  var store=_host.Services.GetRequiredService<LibraryStore>();store.Add(_a,id,old,0);
+  (await a.PostAsJsonAsync($"/PLM/v1/me/collections/{id}/items?groupVersions=true",new{Revision=1,ItemId=primary})).EnsureSuccessStatusCode();Assert.Single(store.Get(_a,id).Items);Assert.Equal(1,store.Get(_a,id).Collection.Revision);
+  (await a.PutAsJsonAsync($"/PLM/v1/me/watch-later/items/{old}?groupVersions=true",new{saved=true})).EnsureSuccessStatusCode();
+  var saved=await a.GetFromJsonAsync<Guid[]>($"/PLM/v1/me/watch-later/membership?groupVersions=true&ids={primary}");Assert.Contains(primary,saved!);
+  (await a.PutAsJsonAsync($"/PLM/v1/me/watch-later/items/{primary}?groupVersions=true",new{saved=false})).EnsureSuccessStatusCode();
+  Assert.Empty(await a.GetFromJsonAsync<Guid[]>($"/PLM/v1/me/watch-later/membership?groupVersions=true&ids={primary}")??[]);
+ }
+ [Fact]public async Task VersionGroupsPaginateAfterDeduplicationAndKeepRawOrder()
+ {
+  using var a=Client(_a);var id=await Create(a);var fixture=(FixtureCatalog)_host.Services.GetRequiredService<ICatalogAccess>();var store=_host.Services.GetRequiredService<LibraryStore>();
+  var ids=Enumerable.Range(0,42).Select(_=>Guid.NewGuid()).ToArray();fixture.Aliases[ids[41]]=ids[0];for(var n=0;n<ids.Length;n++)store.Add(_a,id,ids[n],n);
+  var first=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{id}?groupVersions=true&limit=40");var last=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{id}?groupVersions=true&limit=40&startIndex=40");
+  Assert.Equal(41,first.GetProperty("totalRecordCount").GetInt32());Assert.Equal(40,first.GetProperty("items").GetArrayLength());Assert.Equal(1,last.GetProperty("items").GetArrayLength());Assert.Equal(2,first.GetProperty("items")[0].GetProperty("selectionIds").GetArrayLength());
+  var filtered=await a.GetFromJsonAsync<JsonElement>($"/PLM/v1/me/collections/{id}?groupVersions=true&limit=40&genres=Drama");Assert.Equal(41,filtered.GetProperty("totalRecordCount").GetInt32());
+  Assert.Equal(ids,store.Get(_a,id).Items.Select(x=>x.ItemId));
+ }
  public void Dispose(){_host.Dispose();Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();Directory.Delete(_path,true);}
 }
 
@@ -211,6 +312,26 @@ public sealed class NativeFixtureController : Microsoft.AspNetCore.Mvc.Controlle
  [Microsoft.AspNetCore.Mvc.HttpPost("Items/Delete")]public IActionResult BulkBody(BulkRequest body)=>NoContent();
 }
 public sealed record BulkRequest(Guid[] Ids);
+
+[ApiController]
+[Microsoft.AspNetCore.Authorization.Authorize]
+public sealed class RemoteImageController(ProgressBarrier barrier) : ControllerBase
+{
+ [HttpPost("Fixture/RemoteImages/{itemId:guid}")]
+ public async Task<IActionResult> Download(Guid itemId){await barrier.Enter(HttpContext.RequestAborted);return NoContent();}
+}
+[ApiController]
+[Microsoft.AspNetCore.Authorization.Authorize]
+public sealed class ScheduledTasksController : ControllerBase
+{
+ [HttpDelete("Fixture/Tasks/{taskId:guid}")]public IActionResult Cancel(Guid taskId)=>NoContent();
+}
+[ApiController]
+[Microsoft.AspNetCore.Authorization.Authorize]
+public sealed class ItemsController : ControllerBase
+{
+ [HttpDelete("Fixture/Items/{itemId:guid}")]public IActionResult Delete(Guid itemId)=>NoContent();
+}
 
 public sealed class ProgressBarrier
 {

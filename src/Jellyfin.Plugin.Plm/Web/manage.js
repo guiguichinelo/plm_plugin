@@ -17,7 +17,7 @@
  }
  async function removed(){
   const id=$('removed-list').value;if(!id)return;const data=await P.entries(id,{page:removedPage,limit:100,trash:true});if(!alive())return;$('removed-items').replaceChildren();
-  for(const entry of data.items.filter(i=>i.deletedAt)){const line=row(entry.native?P.title(entry.native):P.t("PlmContentunavailable"),P.t("PlmRemovedon")+P.i18n.date(entry.deletedAt),'restore');line.actions.append(P.button(P.t("LabelRestore"),()=>run(async()=>{await P.call('collections/'+id+'/items/'+entry.itemId+'/restore','POST',{revision:data.collection.revision});P.changed();await removed();message(P.t("PlmContentrestored"));})));$('removed-items').append(line.r);}
+  for(const entry of data.items.filter(i=>i.deletedAt)){const line=row(entry.native?P.title(entry.native):P.t("PlmContentunavailable"),P.t("PlmRemovedon")+P.i18n.date(entry.deletedAt),'restore');line.actions.append(P.button(P.t("LabelRestore"),()=>run(async()=>{if(entry.selectionIds)await P.call('collections/'+id+'/version-groups/restore','POST',{revision:data.collection.revision,displayItemId:entry.displayItemId,selectionIds:entry.selectionIds});else await P.call('collections/'+id+'/items/'+entry.itemId+'/restore','POST',{revision:data.collection.revision});P.changed();await removed();message(P.t("PlmContentrestored"));})));$('removed-items').append(line.r);}
   if(!$('removed-items').childElementCount)$('removed-items').append(P.el('p','plm-muted',P.t("PlmNoremovedselectionsonthispage")));$('removed-next').hidden=(removedPage+1)*100>=data.totalRecordCount;
  }
  $('show-home').onchange=()=>run(async()=>{const prefs=await P.call('preferences');prefs.homeWatchLater=$('show-home').checked;await P.call('preferences','PUT',prefs);P.changed();message(P.t("PlmPreferencesaved"));});

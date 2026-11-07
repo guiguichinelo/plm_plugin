@@ -21,7 +21,9 @@
    if(heart.closest('.plm-ui'))continue;const id=heart.dataset.id,type=heartType(heart);if(id&&!type){P.item(id).then(m=>{if(m&&heart.isConnected){heart.dataset.plmKind=m.Type;schedule();}}).catch(()=>{});continue;}
    if(!id||type&&!['Movie','Series','Season','Episode','Video','MusicVideo','Audio','MusicAlbum','AudioBook','Book','Photo','PhotoAlbum'].includes(type))continue;
    if(heart.nextElementSibling?.dataset.plmFor===id)continue;if(heart.nextElementSibling?.hasAttribute('data-plm-for'))heart.nextElementSibling.remove();
-   if(!P.bindClock)continue;const save=P.button('',null,heart.className+' plm-native-save');save.classList.remove('ratingbutton-withrating');save.dataset.plmFor=id;save.append(P.icon('watch_later'));P.bindClock(save,id);heart.after(save);heart.title=P.t("PlmFavoritesandlists");
+   // Copy appearance, never native lifecycle selectors: Jellyfin calls setItem()
+   // on .btnUserRating/.btnPlaystate during an in-place details refresh.
+   if(!P.bindClock)continue;const save=P.button('',null,heart.className+' plm-native-save');save.classList.remove('ratingbutton-withrating','btnUserRating','btnPlaystate','plm-saved-heart');save.dataset.plmFor=id;save.append(P.icon('watch_later'));P.bindClock(save,id);heart.after(save);heart.title=P.t("PlmFavoritesandlists");
   }
  }
  function anchor(){const all=[...document.querySelectorAll('.homeSectionsContainer>.verticalSection')].filter(e=>!e.hasAttribute('data-plm-home'));const next=document.querySelector('.homeSectionsContainer a[href*="type=nextup"]')?.closest('.verticalSection');return next||all.find(e=>/continuar assistindo|continue watching/i.test(e.querySelector('h2')?.textContent||''))||all[0];}

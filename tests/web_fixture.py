@@ -30,11 +30,11 @@ if(path.endsWith('/memberships'))return fixture.lists.filter(c=>!c.DeletedAt).ma
 if(path==='/PLM/v1/me/collections'&&method==='GET')return structuredClone(fixture.lists.filter(c=>!!c.DeletedAt===(url.searchParams.get('trash')==='true')));
 if(path==='/PLM/v1/me/collections'&&method==='POST'){const c={Id:String(fixture.counter++).padStart(32,'0'),Name:body.name,WatchLater:false,Revision:0};fixture.lists.push(c);return structuredClone(c);}
 const match=path.match(/collections\/([a-f0-9]+)/);if(match){const c=fixture.lists.find(x=>x.Id===match[1]);
-if(method==='GET'){let entries=fixture.selections[c.Id]||[];if(url.searchParams.get('trash')!=='true')entries=entries.filter(e=>!e.DeletedAt);if(url.searchParams.get('progress')==='unplayed'&&fixture.played)entries=[];return {Collection:structuredClone(c),TotalRecordCount:entries.length,Items:structuredClone(entries)};}
+if(method==='GET'){let entries=fixture.selections[c.Id]||[];if(url.searchParams.get('trash')!=='true')entries=entries.filter(e=>!e.DeletedAt);if(url.searchParams.get('progress')==='unplayed'&&fixture.played)entries=[];const total=entries.length,start=Number(url.searchParams.get('startIndex')||0),limit=Number(url.searchParams.get('limit')||total);return {Collection:structuredClone(c),TotalRecordCount:total,Items:structuredClone(entries.slice(start,start+limit))};}
 const revision=body?.revision??Number(url.searchParams.get('revision'));if(revision!==c.Revision)throw {status:409};
 if(path.endsWith('/items')&&method==='POST'){fixture.selections[c.Id]=[{ItemId:body.itemId,Position:0,Media:{Status:'catalogued',Name:'Synthetic film',Kind:'Movie',Genres:['Drama']}}];}
 else if(path.endsWith('/restore'))c.DeletedAt=null;
-else if(method==='DELETE'&&path.includes('/items/'))fixture.selections[c.Id][0].DeletedAt='2026-01-01T00:00:00Z';
+else if(method==='DELETE'&&path.includes('/items/'))fixture.selections[c.Id].find(e=>e.ItemId===path.split('/').pop()).DeletedAt='2026-01-01T00:00:00Z';
 else if(method==='DELETE')c.DeletedAt='2026-01-01T00:00:00Z';
 else if(method==='PUT')c.Name=body.name;c.Revision++;return null;}
 throw Error('Unexpected fixture request '+method+' '+path);

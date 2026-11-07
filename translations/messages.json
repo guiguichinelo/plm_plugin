@@ -449,6 +449,22 @@
     "en": "Remove from Watch Later",
     "pt": "Remover de Assistir mais tarde"
   },
+  "PlmRemovefromlist": {
+    "en": "Remove from list",
+    "pt": "Remover da lista",
+    "native": "RemoveFromPlaylist",
+    "locales": {
+      "en-us": "Remove from list",
+      "pt-br": "Remover da lista",
+      "pt-pt": "Remover da lista",
+      "es": "Quitar de la lista",
+      "fr": "Retirer de la liste",
+      "de": "Aus der Liste entfernen",
+      "it": "Rimuovi dalla lista",
+      "ja": "リストから削除",
+      "zh-cn": "从列表中移除"
+    }
+  },
   "PlmRemovethumbnail": {
     "en": "Remove thumbnail",
     "pt": "Remover thumb"

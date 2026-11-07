@@ -23,6 +23,8 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: python tests/web_smoke.py
       - run: python tests/web_memberships.py
+      - run: python tests/web_unavailable.py
+      - run: python tests/web_native_refresh.py
       - run: python tests/web_page_loader.py
       - run: python tests/web_navigation_state.py
       - run: python tests/web_locales.py

@@ -96,6 +96,13 @@ public sealed class LibraryStore
         using var db = Open(); using var tx = db.BeginTransaction(); Require(db, tx, owner, collectionId); Touch(db, tx, owner, collectionId, revision);
         using var c = Command(db, tx, "UPDATE selections SET deleted_at=$now WHERE collection_id=$id AND item_id=$item AND deleted_at IS NULL", ("$now", Time(DateTimeOffset.UtcNow)), ("$id", Key(collectionId)), ("$item", Key(itemId))); c.ExecuteNonQuery(); tx.Commit();
     }
+    public long ChangeGroup(Guid owner,Guid collection,Guid[] items,long revision,bool restore)
+    {
+        if(items.Length==0||items.Distinct().Count()!=items.Length)throw new ArgumentException();
+        using var db=Open();using var tx=db.BeginTransaction();Require(db,tx,owner,collection);Touch(db,tx,owner,collection,revision);
+        foreach(var item in items) { using var cmd=Command(db,tx,"UPDATE selections SET deleted_at=$deleted WHERE collection_id=$id AND item_id=$item",("$deleted",restore?null:Time(DateTimeOffset.UtcNow)),("$id",Key(collection)),("$item",Key(item)));if(cmd.ExecuteNonQuery()!=1)throw new RevisionConflictException(); }
+        tx.Commit();return revision+1;
+    }
     public void Rename(Guid owner, Guid id, string name, long revision)
     {
         name = name.Trim(); if (name.Length is < 1 or > 120) throw new ArgumentException("Invalid collection name.");
