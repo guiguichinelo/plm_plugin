@@ -128,7 +128,7 @@ public sealed class AdminController(LibraryStore store, CatalogResilience? resil
             autoMatchableReferences=rows.Count(r=>r.Identity.Providers.Count>0) };
     }
     [HttpGet("health")]
-    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.8", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
+    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.9", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
     [HttpGet("maintenance/preview")]
     public object Preview() => store.PreviewCleanup(DateTimeOffset.UtcNow);
     [HttpPost("maintenance/execute")]

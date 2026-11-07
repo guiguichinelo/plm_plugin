@@ -12,11 +12,13 @@ namespace Jellyfin.Plugin.Plm;
 /// <summary>Uses Jellyfin services, never the host database or media filesystem.</summary>
 public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStore lists,
     ILibraryManager library, IUserManager users, IUserDataManager data,
-    ILogger<CatalogResilience> log) : BackgroundService
+    ILogger<CatalogResilience> log, FavoriteMutationGate favorites) : BackgroundService
 {
-    private readonly object _gate = new();
-    private readonly HashSet<(Guid, Guid)> _applying = [];
-    private DateTimeOffset _quietSince = DateTimeOffset.UtcNow;
+    // Never hold a plugin monitor while calling host library/UserData services:
+    // native save notifications can re-enter on a different thread.
+    private long _quietSinceTicks = DateTimeOffset.UtcNow.UtcTicks;
+    private DateTimeOffset QuietSince => new(Interlocked.Read(ref _quietSinceTicks), TimeSpan.Zero);
+    private void ResetQuietPeriod() => Interlocked.Exchange(ref _quietSinceTicks, DateTimeOffset.UtcNow.UtcTicks);
     public bool BaselineComplete { get; private set; }
     public DateTimeOffset? LastSuccessfulCycle { get; private set; }
     public string? LastError { get; private set; }
@@ -56,26 +58,21 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
     /// <summary>Capture synchronously before accepting list additions.</summary>
     public void Capture(Guid owner, Guid id)
     {
-        lock (_gate)
-        {
-            var user = users.GetUserById(owner); var item = library.GetItemById(id);
-            if (user is null || item is null || !Supported.Contains(item.GetType().Name)) return;
-            if (!item.IsVisibleStandalone(user) && !(item is Video && new CatalogAccess(library,users,data).Displays(owner,[id]).ContainsKey(id))) return;
-            memory.Remember(owner, Identity(item));
-        }
+        var user = users.GetUserById(owner); var item = library.GetItemById(id);
+        if (user is null || item is null || !Supported.Contains(item.GetType().Name)) return;
+        if (!item.IsVisibleStandalone(user) && !(item is Video && new CatalogAccess(library,users,data).Displays(owner,[id]).ContainsKey(id))) return;
+        memory.Remember(owner, Identity(item));
     }
     private void OnItemRemoved(object? sender, ItemChangeEventArgs e)
     {
-        lock (_gate)
+        try
         {
-            try
-            {
-                _quietSince = DateTimeOffset.UtcNow;
-                foreach (var row in memory.References().Where(r => r.CurrentItemId == e.Item.Id))
-                    memory.MarkMissing(row.Owner, row.CurrentItemId);
-            }
-            catch (Exception error) { log.LogError(error, "Unable to record catalog disappearance; existing PLM intent is retained."); }
+            ResetQuietPeriod();
+            foreach (var row in memory.References().Where(r => r.CurrentItemId == e.Item.Id))
+                memory.MarkMissing(row.Owner, row.CurrentItemId);
         }
+        catch (Exception error) { log.LogError(error, "Unable to record catalog disappearance; existing PLM intent is retained."); }
+
     }
     private void OnUserDataSaved(object? sender, UserDataSaveEventArgs e)
     {
@@ -85,22 +82,18 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
         // and DTOs explicitly carrying IsFavorite represent favorite intent.
         if (!NativeFavoriteIntent.HasFavoriteField) return;
         var favorite=e.UserData.IsFavorite;
-        lock (_gate)
+        try
         {
-            if (_applying.Contains((e.UserId, e.Item.Id))) return;
-            try
-            {
-                if (!Supported.Contains(e.Item.GetType().Name)) return;
-                var user = users.GetUserById(e.UserId);
-                if (user is null || !e.Item.IsVisibleStandalone(user)) return;
-                var identity = Identity(e.Item);
-                // Capture a fresh action on the destination BEFORE a background
-                // rebind. A separate destination reference blocks stale replay.
-                var row = memory.Remember(e.UserId, identity);
-                memory.RecordFavorite(e.UserId, row.ReferenceId, favorite);
-            }
-            catch (Exception error) { log.LogError(error, "Unable to preserve favorite intent."); }
+            if (!Supported.Contains(e.Item.GetType().Name)) return;
+            var user = users.GetUserById(e.UserId);
+            if (user is null || !e.Item.IsVisibleStandalone(user)) return;
+            var identity = Identity(e.Item);
+            // Capture a fresh action on the destination BEFORE a background
+            // rebind. A separate destination reference blocks stale replay.
+            var row = memory.Remember(e.UserId, identity);
+            memory.RecordFavorite(e.UserId, row.ReferenceId, favorite);
         }
+        catch (Exception error) { log.LogError(error, "Unable to preserve favorite intent."); }
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -109,7 +102,7 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
         {
             try
             {
-                lock (_gate) Cycle(stoppingToken);
+                Cycle(stoppingToken);
                 LastSuccessfulCycle = DateTimeOffset.UtcNow; LastError = null;
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
@@ -123,7 +116,7 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
     }
     private void Cycle(CancellationToken token)
     {
-        if (library.IsScanRunning) _quietSince = DateTimeOffset.UtcNow;
+        if (library.IsScanRunning) ResetQuietPeriod();
         // Seed only previously unknown favorites. Catalog loss cannot clear
         // saved intent, and a later native true cannot erase a false tombstone.
         foreach (var user in users.GetUsers().ToArray())
@@ -155,7 +148,7 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
                 Capture(source.Owner, selection.ItemId);
         }
         BaselineComplete = true;
-        var allowRebind = !library.IsScanRunning && DateTimeOffset.UtcNow - _quietSince >= TimeSpan.FromSeconds(60);
+        var allowRebind = !library.IsScanRunning && DateTimeOffset.UtcNow - QuietSince >= TimeSpan.FromSeconds(60);
         foreach (var row in memory.References())
         {
             token.ThrowIfCancellationRequested();
@@ -184,8 +177,8 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
             token.ThrowIfCancellationRequested();
             var user = users.GetUserById(row.Owner); var item = library.GetItemById(row.CurrentItemId);
             if (user is null || item is null || !item.IsVisibleStandalone(user) || !row.Identity.Matches(Identity(item))) continue;
-            _applying.Add((row.Owner, row.CurrentItemId));
-            try
+            using var lease=favorites.Acquire(row.Owner,row.CurrentItemId,token);
+            if(!memory.IsPendingFavorite(row))continue;
             {
                 // Preserve every playback field. PLM is not a playback-history
                 // restore tool; only the favorite bit is replayed.
@@ -198,7 +191,6 @@ public sealed class CatalogResilience(CatalogResilienceStore memory, LibraryStor
                 }
                 memory.AcknowledgeFavorite(row);
             }
-            finally { _applying.Remove((row.Owner, row.CurrentItemId)); }
         }
     }
     private IReadOnlyList<BaseItem> FindCandidates(RememberedMedia row, Jellyfin.Database.Implementations.Entities.User user)

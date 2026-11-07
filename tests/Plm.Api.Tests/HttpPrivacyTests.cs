@@ -54,12 +54,24 @@ public sealed class HttpPrivacyTests : IDisposable
   _host=new HostBuilder().ConfigureWebHost(web=>web.UseTestServer().ConfigureServices(s=>{
    s.AddAuthentication("fixture").AddScheme<AuthenticationSchemeOptions,FixtureAuth>("fixture",_=>{});
    s.AddAuthorization(o=>o.AddPolicy("RequiresElevation",p=>p.RequireClaim("admin","true")));
-   s.AddSingleton(store);s.AddSingleton(new CatalogResilienceStore(Path.Combine(_path,"plm.db")));s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<ProgressBarrier>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
+   s.AddSingleton(store);s.AddSingleton(new CatalogResilienceStore(Path.Combine(_path,"plm.db")));s.AddSingleton<ICatalogAccess,FixtureCatalog>();s.AddSingleton<ProgressBarrier>();s.AddSingleton<MirrorMutationGate>();s.AddSingleton<MirrorProtection>();s.AddSingleton<FavoriteMutationGate>();s.AddSingleton<NativeFavoriteIntent>();s.AddControllers(o=>{o.Filters.AddService<MirrorProtection>(int.MinValue);o.Filters.AddService<NativeFavoriteIntent>(int.MinValue+1);}).AddApplicationPart(typeof(CollectionsController).Assembly).AddApplicationPart(typeof(NativeFixtureController).Assembly);
   }).Configure(a=>{a.UseRouting();a.UseAuthentication();a.UseAuthorization();a.UseEndpoints(e=>e.MapControllers());})).Start();
   _server=_host.GetTestServer();
  }
  private HttpClient Client(Guid? id=null){var c=_server.CreateClient();if(id.HasValue)c.DefaultRequestHeaders.Add("X-Test-User",id.ToString());return c;}
  private async Task<Guid> Create(HttpClient c){var r=await c.PostAsJsonAsync("/PLM/v1/me/collections",new{Name="Private"});r.EnsureSuccessStatusCode();var d=await r.Content.ReadFromJsonAsync<JsonElement>();return d.GetProperty("id").GetGuid();}
+ [Fact]public async Task NativeFavoriteWaitsForSameItemReplayButPlaybackUpdatesRemainFree()
+ {
+  using var client=Client(_a);var item=Guid.NewGuid();var gate=_host.Services.GetRequiredService<FavoriteMutationGate>();
+  using var replay=await gate.AcquireAsync(_a,item,CancellationToken.None);
+  var favorite=client.PostAsJsonAsync("/Fixture/FavoriteItems/"+item,new{});
+  await Task.Delay(100);Assert.False(favorite.IsCompleted);
+  (await client.PostAsJsonAsync("/Fixture/UserData",new MediaBrowser.Model.Dto.UpdateUserItemDataDto{Played=true})).EnsureSuccessStatusCode();
+  replay.Dispose();(await favorite.WaitAsync(TimeSpan.FromSeconds(2))).EnsureSuccessStatusCode();
+  using var after=await gate.AcquireAsync(_a,item,CancellationToken.None);
+  using var cancelled=new CancellationTokenSource();var waiter=gate.AcquireAsync(_a,item,cancelled.Token);cancelled.Cancel();
+  await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>waiter);
+ }
  [Fact]public async Task PartialNativeUpdatesAreNotMistakenForUnlikesAndMetricsRequireAdmin()
  {
   using var c=Client(_a);
@@ -304,7 +316,7 @@ public sealed class NativeFixtureController : Microsoft.AspNetCore.Mvc.Controlle
  [Microsoft.AspNetCore.Mvc.HttpGet("Fixture/SourceCollection/{collectionId:guid}")]public IActionResult SourceCollection(Guid collectionId)=>NoContent();
  [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/UserData")]public IActionResult UserData(MediaBrowser.Model.Dto.UpdateUserItemDataDto body)=>
   Ok(new{explicitFavorite=(bool)typeof(NativeFavoriteIntent).GetProperty("HasFavoriteField",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!});
- [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/FavoriteItems/{id:guid}")]public IActionResult Favorite(Guid id)=>
+ [Microsoft.AspNetCore.Mvc.HttpPost("Fixture/FavoriteItems/{itemId:guid}")]public IActionResult Favorite(Guid itemId)=>
   Ok(new{explicitFavorite=(bool)typeof(NativeFavoriteIntent).GetProperty("HasFavoriteField",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic)!.GetValue(null)!});
  [Microsoft.AspNetCore.Mvc.HttpGet("Playlists/{playlistId:guid}")]public IActionResult Read(Guid playlistId)=>Ok();
  [Microsoft.AspNetCore.Mvc.HttpPost("Playlists/{playlistId:guid}")]public IActionResult Update(Guid playlistId)=>NoContent();

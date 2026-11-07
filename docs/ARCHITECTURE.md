@@ -23,3 +23,8 @@ Administrators may set `DisableNativePlaylists=true`. This blocks native playlis
 ## Catalog resilience
 
 Beta 5 adds identity, alias, favorite-intent and reconciliation-log tables to the same PLM database. Baseline capture and explicit native changes preserve intent independently of catalog entries. Missing entries never expire because a scan lost them. Rebinding requires a unique, visible provider match after the scan settles; unavailable metadata, conflicting providers and duplicate copies remain pending. Unlike/deletion markers take precedence over stale state. Native favorite replay changes only IsFavorite and preserves current playback data. See [matching rules and limitations](CATALOG-RESILIENCE.md).
+
+
+## Favorite callback concurrency
+
+Catalog resilience never holds a plugin monitor while calling host library or UserData services. Explicit native favorite actions and replay share bounded user/item exclusion; event callbacks do not acquire that gate. Replay checks the stored item/revision after acquiring the gate, so a completed newer native action supersedes a previously enumerated replay. Partial playback updates do not imply favorite intent and do not acquire this exclusion. SQLite transactions and revision checks remain the persistence boundary.

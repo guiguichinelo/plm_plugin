@@ -39,7 +39,9 @@ public sealed class ResilienceTests : IDisposable
         r=Assert.Single(_memory.References(_owner));Assert.False(r.Favorite);
         Assert.True(_memory.Rebind(r,old with {ItemId=Guid.NewGuid()}));
         var pending=Assert.Single(_memory.References(_owner));Assert.True(pending.PendingFavorite);Assert.False(pending.Favorite);
+        Assert.True(_memory.IsPendingFavorite(pending));
         _memory.RecordFavorite(_owner,r.ReferenceId,true);
+        Assert.False(_memory.IsPendingFavorite(pending));
         _memory.AcknowledgeFavorite(pending); // stale acknowledgement cannot clear a newer action
         Assert.True(Assert.Single(_memory.References(_owner)).Favorite);
     }

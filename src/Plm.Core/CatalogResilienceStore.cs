@@ -148,6 +148,13 @@ public sealed class CatalogResilienceStore
             ("$old", Key(expected.CurrentItemId)), ("$new", Key(candidate.ItemId)), ("$now", DateTimeOffset.UtcNow.ToString("O")))) c.ExecuteNonQuery();
         tx.Commit(); return true;
     }
+    public bool IsPendingFavorite(RememberedMedia expected)
+    {
+        using var db = Open(); using var c = Cmd(db, null,
+            "SELECT COUNT(*) FROM resilience_media WHERE owner=$owner AND reference_id=$ref AND current_item_id=$item AND favorite_revision=$revision AND pending_favorite=1",
+            ("$owner",Key(expected.Owner)),("$ref",Key(expected.ReferenceId)),("$item",Key(expected.CurrentItemId)),("$revision",expected.FavoriteRevision));
+        return Convert.ToInt32(c.ExecuteScalar(),CultureInfo.InvariantCulture)==1;
+    }
     public void AcknowledgeFavorite(RememberedMedia expected)
     {
         using var db = Open(); using var c = Cmd(db, null, """
