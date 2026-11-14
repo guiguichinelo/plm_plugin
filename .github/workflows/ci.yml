@@ -25,8 +25,11 @@ jobs:
       - run: python tests/web_memberships.py
       - run: python tests/web_unavailable.py
       - run: python tests/web_native_refresh.py
+      - run: python tests/web_library_scope.py
+      - run: python tests/web_multiple_views.py
       - run: python tests/web_page_loader.py
       - run: python tests/web_navigation_state.py
+      - run: python tests/web_tv_favorites.py
       - run: python tests/web_locales.py
       - run: python tests/web_layout.py
       - shell: pwsh

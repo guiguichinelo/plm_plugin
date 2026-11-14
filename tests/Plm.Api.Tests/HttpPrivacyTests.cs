@@ -32,6 +32,10 @@ public sealed class FixtureAuth(IOptionsMonitor<AuthenticationSchemeOptions> opt
 }
 public sealed class FixtureCatalog : ICatalogAccess
 {
+ public readonly Dictionary<Guid,HashSet<Guid>> Scopes=[];
+ public readonly HashSet<(Guid Owner,Guid Scope)> HiddenScopes=[];
+ public void ValidateScope(Guid owner,Guid? libraryId){if(libraryId.HasValue&&(!Scopes.ContainsKey(libraryId.Value)||HiddenScopes.Contains((owner,libraryId.Value))))throw new CollectionMissingException();}
+ public IReadOnlyList<Guid> FavoriteIds(Guid owner)=>Favorites.Where(x=>x.Owner==owner).Select(x=>x.Item).ToArray();
  public readonly HashSet<(Guid Owner, Guid Item)> Favorites = [];
  public readonly HashSet<Guid> Unavailable = [];
  public readonly Dictionary<Guid,Guid> Aliases = [];
@@ -39,10 +43,10 @@ public sealed class FixtureCatalog : ICatalogAccess
  public void EnsureFavorite(Guid owner, Guid id) => Favorites.Add((owner, id));
  public MediaCard Resolve(Guid owner,Guid id)=>Unavailable.Contains(id)?new(id,"unavailable",null,null,[]):new(id,"catalogued","Example","Movie",["Drama"]);
  public IReadOnlyDictionary<Guid,MediaCard> ResolveMany(Guid owner,IReadOnlyList<Guid> ids)=>ids.Where(id=>!Unavailable.Contains(id)).ToDictionary(id=>id,id=>Resolve(owner,id));
- public CatalogPage Query(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int start,int limit){var result=ids.Select(id=>Resolve(owner,id)).Where(m=>filter.Genres.Length==0||filter.Genres.Any(g=>m.Genres.Contains(g))).ToArray();return new(result.Length,result.Skip(start).Take(limit).ToArray());}
+ public CatalogPage Query(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int start,int limit){ValidateScope(owner,filter.LibraryId);var result=ids.Where(id=>!Unavailable.Contains(id)&&(!filter.LibraryId.HasValue||Scopes[filter.LibraryId.Value].Contains(id))).Select(id=>Resolve(owner,id)).Where(m=>filter.Genres.Length==0||filter.Genres.Any(g=>m.Genres.Contains(g))).ToArray();return new(result.Length,result.Skip(start).Take(limit).ToArray());}
 }
 
-public sealed class HttpPrivacyTests : IDisposable
+public sealed partial class HttpPrivacyTests : IDisposable
 {
  private readonly string _path=Path.Combine(Path.GetTempPath(),"plm-api-"+Guid.NewGuid().ToString("N"));
  private readonly TestServer _server;

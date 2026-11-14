@@ -3,260 +3,260 @@
   "fallback": "en-us",
   "locales": {
     "af": {
-      "translated": 21,
-      "total": 156
+      "translated": 24,
+      "total": 174
     },
     "ar": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "be-by": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "bg-bg": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "bn-bd": {
-      "translated": 14,
-      "total": 156
+      "translated": 15,
+      "total": 174
     },
     "ca": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "cs": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "cy": {
-      "translated": 29,
-      "total": 156
+      "translated": 34,
+      "total": 174
     },
     "da": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "de": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "el": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "en-gb": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "en-us": {
-      "translated": 156,
-      "total": 156
+      "translated": 174,
+      "total": 174
     },
     "eo": {
-      "translated": 33,
-      "total": 156
+      "translated": 38,
+      "total": 174
     },
     "es": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "es-419": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "es-ar": {
-      "translated": 37,
-      "total": 156
+      "translated": 42,
+      "total": 174
     },
     "es-do": {
-      "translated": 7,
-      "total": 156
+      "translated": 8,
+      "total": 174
     },
     "es-mx": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "et": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "eu": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "fa": {
-      "translated": 36,
-      "total": 156
+      "translated": 41,
+      "total": 174
     },
     "fi": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "fil": {
-      "translated": 33,
-      "total": 156
+      "translated": 38,
+      "total": 174
     },
     "fr": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "fr-ca": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "gl": {
-      "translated": 29,
-      "total": 156
+      "translated": 32,
+      "total": 174
     },
     "gsw": {
-      "translated": 19,
-      "total": 156
+      "translated": 23,
+      "total": 174
     },
     "he": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "hi-in": {
-      "translated": 13,
-      "total": 156
+      "translated": 14,
+      "total": 174
     },
     "hr": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "hu": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "id": {
-      "translated": 36,
-      "total": 156
+      "translated": 41,
+      "total": 174
     },
     "it": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "ja": {
-      "translated": 37,
-      "total": 156
+      "translated": 42,
+      "total": 174
     },
     "kk": {
-      "translated": 33,
-      "total": 156
+      "translated": 38,
+      "total": 174
     },
     "ko": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "lt-lt": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "lv": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "mr": {
-      "translated": 28,
-      "total": 156
+      "translated": 31,
+      "total": 174
     },
     "ms": {
-      "translated": 18,
-      "total": 156
+      "translated": 19,
+      "total": 174
     },
     "nb": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "nl": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "nn": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "pl": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "pr": {
-      "translated": 13,
-      "total": 156
+      "translated": 14,
+      "total": 174
     },
     "pt": {
-      "translated": 156,
-      "total": 156
+      "translated": 174,
+      "total": 174
     },
     "pt-br": {
-      "translated": 156,
-      "total": 156
+      "translated": 174,
+      "total": 174
     },
     "pt-pt": {
-      "translated": 156,
-      "total": 156
+      "translated": 174,
+      "total": 174
     },
     "ro": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "ru": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "sk": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "sl-si": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "sq": {
-      "translated": 20,
-      "total": 156
+      "translated": 21,
+      "total": 174
     },
     "sv": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "ta": {
-      "translated": 36,
-      "total": 156
+      "translated": 41,
+      "total": 174
     },
     "th": {
-      "translated": 20,
-      "total": 156
+      "translated": 23,
+      "total": 174
     },
     "tr": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "uk": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "ur-pk": {
-      "translated": 34,
-      "total": 156
+      "translated": 39,
+      "total": 174
     },
     "vi": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "zh-cn": {
-      "translated": 39,
-      "total": 156
+      "translated": 44,
+      "total": 174
     },
     "zh-hk": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     },
     "zh-tw": {
-      "translated": 38,
-      "total": 156
+      "translated": 43,
+      "total": 174
     }
   }
 }

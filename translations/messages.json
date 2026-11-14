@@ -47,7 +47,10 @@
   "PlmFavoritesSettings": {
     "en": "Favorites settings",
     "pt": "Configurações dos Favoritos",
-    "nativeParts": ["Settings", "Favorites"],
+    "nativeParts": [
+      "Settings",
+      "Favorites"
+    ],
     "locales": {
       "ar": "إعدادات المفضلة",
       "de": "Favoriteneinstellungen",
@@ -684,5 +687,83 @@
   "PlmLikeAction": {
     "en": "Like",
     "pt": "Curtir"
+  },
+  "PlmLibraryViews": {
+    "en": "Library views",
+    "pt": "Visualizações da biblioteca"
+  },
+  "Suggestions": {
+    "en": "Suggestions",
+    "pt": "Sugestões",
+    "native": "Suggestions"
+  },
+  "Collections": {
+    "en": "Collections",
+    "pt": "Coleções",
+    "native": "Collections"
+  },
+  "TabUpcoming": {
+    "en": "Upcoming",
+    "pt": "Em breve",
+    "native": "TabUpcoming"
+  },
+  "Studios": {
+    "en": "Studios",
+    "pt": "Estúdios",
+    "native": "Studios"
+  },
+  "TabNetworks": {
+    "en": "Networks",
+    "pt": "Emissoras",
+    "native": "TabNetworks"
+  },
+  "More": {
+    "en": "More",
+    "pt": "Mais",
+    "native": "More"
+  },
+  "PlmAllSavedDescription": {
+    "en": "Liked titles and selections from your personal lists.",
+    "pt": "Títulos curtidos e seleções das suas listas pessoais."
+  },
+  "PlmLibrary": {
+    "en": "Library",
+    "pt": "Biblioteca"
+  },
+  "PlmAllSaved": {
+    "en": "All saved",
+    "pt": "Todos os salvos"
+  },
+  "PlmExploreList": {
+    "en": "Explore",
+    "pt": "Explorar"
+  },
+  "PlmExploreNamedList": {
+    "en": "Explore {0}",
+    "pt": "Explorar {0}"
+  },
+  "PlmNoSavedMatches": {
+    "en": "No saved titles match these filters",
+    "pt": "Nenhum título salvo corresponde a estes filtros"
+  },
+  "PlmNoLibraryFavorites": {
+    "en": "No favorites in this library yet",
+    "pt": "Ainda não há favoritos nesta biblioteca"
+  },
+  "PlmLibraryFavoritesHint": {
+    "en": "Like a title or save it to one of your lists. Your selections from this library will appear here.",
+    "pt": "Curta um título ou salve em uma das suas listas. Suas escolhas desta biblioteca aparecerão aqui."
+  },
+  "PlmExploreCatalog": {
+    "en": "Browse library",
+    "pt": "Explorar biblioteca"
+  },
+  "PlmMoreLists": {
+    "en": "More lists",
+    "pt": "Mais listas"
+  },
+  "PlmRetry": {
+    "en": "Try again",
+    "pt": "Tentar novamente"
   }
 }

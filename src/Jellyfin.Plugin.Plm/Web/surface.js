@@ -1,7 +1,7 @@
 /* Own only PLM's page lifecycle and backdrop, never the host backdrop slots. */
 (() => {
  'use strict';const P=window.PLM;if(!P||P.surface)return;
- let mounted=null;
+ let mounted=null;const mounts=new Set();
  function route(){const url=new URL(location.hash.slice(1)||'/',location.origin);return /^\/userpluginsettings(?:\.html)?$/.test(url.pathname)&&url.searchParams.get('pageUrl')==='/PLM/web/collections.html';}
  function visible(m){return !!m&&m.owner===P.owner()&&route()&&m.root.isConnected&&!m.root.closest('.hide,[hidden]')&&m.root.getClientRects().length>0;}
  function clear(){document.getElementById('plm-page-backdrop')?.remove();if(document.body.classList.contains('plm-browsing-backdrop'))document.body.classList.remove('plm-browsing-backdrop');}
@@ -15,12 +15,14 @@
   if(!document.body.classList.contains('plm-browsing-backdrop'))document.body.classList.add('plm-browsing-backdrop');
  }
  function sync(){
+  for(const entry of mounts)if(!entry.root.isConnected){if(entry.active)entry.callbacks.leave?.();entry.callbacks.destroy?.();mounts.delete(entry);if(mounted===entry){mounted=null;clear();}}
+  const next=[...mounts].reverse().find(visible)||null;
+  if(next!==mounted){if(mounted?.active){mounted.callbacks.leave?.();mounted.active=false;}mounted=next;clear();}
   const m=mounted;if(!m)return;
-  if(!m.root.isConnected){mounted=null;clear();m.callbacks.leave?.();m.callbacks.destroy?.();return;}
-  const active=visible(m),key=new URL(location.hash.slice(1)||'/',location.origin).searchParams.get('list')||'';
+  const active=visible(m),key=new URL(location.hash.slice(1)||'/',location.origin).searchParams.get('list')+'|'+new URL(location.hash.slice(1)||'/',location.origin).searchParams.get('libraryId')+'|'+new URL(location.hash.slice(1)||'/',location.origin).searchParams.get('mode');
   if(active!==m.active||active&&m.key!==key){if(m.active)m.callbacks.leave?.();m.active=active;m.key=key;if(active){paint();m.callbacks.enter();}else clear();}else if(active)paint();
  }
- function mount(root,callbacks){if(mounted?.root===root){sync();return;}if(mounted){mounted.callbacks.leave?.();mounted.callbacks.destroy?.();}clear();mounted={root,callbacks,owner:P.owner(),active:false,url:''};sync();}
+ function mount(root,callbacks){if([...mounts].some(m=>m.root===root)){sync();return;}mounts.add({root,callbacks,owner:P.owner(),active:false,url:''});sync();}
  P.surface={mount,sync,isActive:root=>mounted?.root===root&&mounted.active&&visible(mounted),route};
  P.setBackdrop=(media,root)=>{if(!mounted||root&&root!==mounted.root||!visible(mounted))return;mounted.url=typeof media==='string'?media:media?P.image(media,true):'';paint();};
  P.clearBackdrop=clear;

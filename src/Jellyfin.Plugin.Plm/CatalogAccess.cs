@@ -8,6 +8,9 @@ namespace Jellyfin.Plugin.Plm;
 public sealed record MediaCard(Guid ItemId, string Status, string? Name, string? Kind, string[] Genres, bool Played = false, long PositionTicks = 0);
 public interface ICatalogAccess
 {
+    void ValidateScope(Guid owner,Guid? libraryId) { }
+    IReadOnlyList<Guid> FavoriteIds(Guid owner)=>[];
+    IReadOnlyList<Guid> MatchingIds(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter)=>Query(owner,ids,filter,0,Math.Max(1,ids.Count)).Items.Select(m=>m.ItemId).ToArray();
     IReadOnlyDictionary<Guid,Guid> Displays(Guid owner,IReadOnlyList<Guid> ids) => ids.Distinct().ToDictionary(id=>id,id=>id);
     MediaCard Resolve(Guid owner, Guid id);
     IReadOnlyDictionary<Guid,MediaCard> ResolveMany(Guid owner,IReadOnlyList<Guid> ids);
@@ -15,12 +18,25 @@ public interface ICatalogAccess
 }
 public sealed class CatalogAccess(ILibraryManager library, IUserManager users, IUserDataManager data) : ICatalogAccess
 {
+    private Folder? Scope(Guid owner,Guid? id)
+    {
+        if(!id.HasValue)return null;
+        var user=users.GetUserById(owner)??throw new UnauthorizedAccessException();
+        if(library.GetItemById(id.Value)is not CollectionFolder folder||!folder.IsVisible(user))throw new global::Plm.Core.CollectionMissingException();
+        return folder;
+    }
+    public void ValidateScope(Guid owner,Guid? libraryId)=>Scope(owner,libraryId);
+    public IReadOnlyList<Guid> FavoriteIds(Guid owner)
+    {
+        var user=users.GetUserById(owner)??throw new UnauthorizedAccessException();
+        return library.GetItemIds(new InternalItemsQuery(user){Recursive=true,IsFavorite=true,IncludeItemTypes=Supported.Select(Enum.Parse<BaseItemKind>).ToArray(),EnableTotalRecordCount=false});
+    }
     public IReadOnlyDictionary<Guid,Guid> Displays(Guid owner,IReadOnlyList<Guid> ids)
     {
         var user=users.GetUserById(owner)??throw new UnauthorizedAccessException();
         var allowed=new Dictionary<Guid,BaseItem>();
         void Load(IEnumerable<Guid> keys) { foreach(var batch in keys.Distinct().Where(id=>!allowed.ContainsKey(id)).Chunk(200))
-            foreach(var item in library.GetItemsResult(new InternalItemsQuery{User=user,ItemIds=batch,Recursive=true,IncludeAlternateVersions=true,EnableTotalRecordCount=false}).Items)
+            foreach(var item in library.GetItemsResult(new InternalItemsQuery(user){ItemIds=batch,Recursive=true,IncludeAlternateVersions=true,EnableTotalRecordCount=false}).Items)
                 allowed[item.Id]=item; }
         Load(ids);
         foreach(var id in ids.Distinct().Where(id=>!allowed.ContainsKey(id))) { var item=library.GetItemById(id);if(item is Video && item.IsVisible(user))allowed[id]=item; }
@@ -40,7 +56,7 @@ public sealed class CatalogAccess(ILibraryManager library, IUserManager users, I
     {
         var user = users.GetUserById(owner) ?? throw new UnauthorizedAccessException();
         if(ids.Count==0)return new Dictionary<Guid,MediaCard>();
-        var items=library.GetItemsResult(new InternalItemsQuery{User=user,ItemIds=ids.ToArray(),Recursive=true,Limit=ids.Count,EnableTotalRecordCount=false}).Items;
+        var items=library.GetItemsResult(new InternalItemsQuery(user){ItemIds=ids.ToArray(),Recursive=true,Limit=ids.Count,EnableTotalRecordCount=false}).Items;
         var result=new Dictionary<Guid,MediaCard>();
         foreach(var item in items){if(!item.IsVisibleStandalone(user)||!Supported.Contains(item.GetType().Name))continue;var progress=data.GetUserData(user,item);result[item.Id]=new(item.Id,"catalogued",item.Name,item.GetType().Name,item.Genres,progress?.Played??false,progress?.PlaybackPositionTicks??0);}
         return result;
@@ -48,11 +64,21 @@ public sealed class CatalogAccess(ILibraryManager library, IUserManager users, I
     private static readonly string[] Supported=["Movie","Series","Season","Episode","Audio","MusicAlbum","AudioBook","Book","Photo","PhotoAlbum","Video","MusicVideo"];
     public CatalogPage Query(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int start,int limit)
     {
-        var user=users.GetUserById(owner)??throw new UnauthorizedAccessException();if(ids.Count==0)return new(0,[]);
-        var sort=filter.Sort switch{"year"=>ItemSortBy.ProductionYear,"created"=>ItemSortBy.DateCreated,"premiere"=>ItemSortBy.PremiereDate,_=>ItemSortBy.SortName};
-        var query=new InternalItemsQuery{User=user,ItemIds=ids.ToArray(),Recursive=true,StartIndex=start,Limit=limit,EnableTotalRecordCount=true,Genres=filter.Genres,SearchTerm=filter.Search,IncludeItemTypes=(filter.Types.Length>0?filter.Types:Supported).Select(Enum.Parse<BaseItemKind>).ToArray(),IsPlayed=filter.Progress=="played"?true:filter.Progress=="unplayed"?false:null,IsResumable=filter.Progress=="resume"?true:null,IsFavorite=filter.Favorite,Years=filter.Year.HasValue?[filter.Year.Value]:[],OrderBy=[(sort,filter.Descending?SortOrder.Descending:SortOrder.Ascending)]};
-        var page=library.GetItemsResult(query);var cards=new List<MediaCard>();
+        var query=CreateQuery(owner,ids,filter,start,limit);if(ids.Count==0)return new(0,[]);
+        var user=query.User!;var page=library.GetItemsResult(query);var cards=new List<MediaCard>();
         foreach(var item in page.Items){if(!item.IsVisibleStandalone(user))continue;var progress=data.GetUserData(user,item);cards.Add(new(item.Id,"catalogued",item.Name,item.GetType().Name,item.Genres,progress?.Played??false,progress?.PlaybackPositionTicks??0));}
         return new(page.TotalRecordCount,cards);
+    }
+    public IReadOnlyList<Guid> MatchingIds(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter)
+    {
+        return Query(owner,ids,filter,0,Math.Max(1,ids.Count)).Items.Select(i=>i.ItemId).ToArray();
+    }
+    private InternalItemsQuery CreateQuery(Guid owner,IReadOnlyList<Guid> ids,CatalogFilter filter,int? start,int? limit)
+    {
+        var user=users.GetUserById(owner)??throw new UnauthorizedAccessException();var scope=Scope(owner,filter.LibraryId);
+        var sort=filter.Sort switch{"year"=>ItemSortBy.ProductionYear,"created"=>ItemSortBy.DateCreated,"premiere"=>ItemSortBy.PremiereDate,_=>ItemSortBy.SortName};
+        var query=new InternalItemsQuery(user){ItemIds=ids.ToArray(),Recursive=true,StartIndex=start,Limit=limit,EnableTotalRecordCount=true,Genres=filter.Genres,SearchTerm=filter.Search,IncludeItemTypes=(filter.Types.Length>0?filter.Types:Supported).Select(Enum.Parse<BaseItemKind>).ToArray(),IsPlayed=filter.Progress=="played"?true:filter.Progress=="unplayed"?false:null,IsResumable=filter.Progress=="resume"?true:null,IsFavorite=filter.Favorite,Years=filter.Year.HasValue?[filter.Year.Value]:[],OrderBy=[(sort,filter.Descending?SortOrder.Descending:SortOrder.Ascending)]};
+        query.Parent=scope;
+        return query;
     }
 }

@@ -53,9 +53,9 @@ public sealed partial class CollectionsController(LibraryStore store, ICatalogAc
         store.Create(Owner,"Assistir mais tarde",true);return store.Memberships(Owner,itemId);
     });
     [HttpGet("collections/{id:guid}")]
-    public IActionResult Get(Guid id, [FromQuery] bool trash = false, [FromQuery] int startIndex = 0, [FromQuery] int limit = 40, [FromQuery] string? genre = null, [FromQuery] string? progress = null,[FromQuery]string? genres=null,[FromQuery]string? types=null,[FromQuery]string? search=null,[FromQuery]string? sort=null,[FromQuery]bool descending=false,[FromQuery]int? year=null,[FromQuery]bool? favorite=null,bool groupVersions=false) => Handle(() =>
+    public IActionResult Get(Guid id, [FromQuery] bool trash = false, [FromQuery] int startIndex = 0, [FromQuery] int limit = 40, [FromQuery] string? genre = null, [FromQuery] string? progress = null,[FromQuery]string? genres=null,[FromQuery]string? types=null,[FromQuery]string? search=null,[FromQuery]string? sort=null,[FromQuery]bool descending=false,[FromQuery]int? year=null,[FromQuery]bool? favorite=null,bool groupVersions=false,[FromQuery]Guid? libraryId=null) => Handle(() =>
     {
-        if(startIndex<0||limit is <1 or >200)throw new ArgumentException();var filter=CatalogFilter.Parse(genres,genre,progress,types,search,sort,descending,year,favorite);
+        if(startIndex<0||limit is <1 or >200)throw new ArgumentException();var filter=CatalogFilter.Parse(genres,genre,progress,types,search,sort,descending,year,favorite,libraryId);catalog.ValidateScope(Owner,libraryId);
         if(groupVersions)return GroupedPage(id,trash,startIndex,limit,filter);
         if(!filter.RequiresCatalog){
             var page=store.Page(Owner,id,startIndex,limit,trash);
@@ -128,7 +128,7 @@ public sealed class AdminController(LibraryStore store, CatalogResilience? resil
             autoMatchableReferences=rows.Count(r=>r.Identity.Providers.Count>0) };
     }
     [HttpGet("health")]
-    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.9", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
+    public object Health() => new { plugin = "PLM", version = "0.1.0-beta.11", target = "12.4.0", stage = "beta", mirrorsEnabled = Plugin.Instance?.Configuration.EnableMirrors == true, userInterfaceReady = true };
     [HttpGet("maintenance/preview")]
     public object Preview() => store.PreviewCleanup(DateTimeOffset.UtcNow);
     [HttpPost("maintenance/execute")]

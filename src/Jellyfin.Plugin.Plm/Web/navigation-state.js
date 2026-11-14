@@ -22,11 +22,13 @@
  function schedule(){if(!pending){pending=true;setTimeout(sync,0);}}
  function sync(){
   pending=false;observer.disconnect();titleObserver.disconnect();
-  const active=activeRoute();
-  if(active&&typeof window.PLM?.t==='function'){
+  const url=new URL(location.hash.slice(1)||'/',location.origin);
+  const scope=url.searchParams.get('pageUrl')==='/PLM/web/collections.html'?url.searchParams.get('libraryId'):null;
+  const active=activeRoute()&&!scope;
+  if((active||scope)&&typeof window.PLM?.t==='function'){
    if(previousTitle===null)previousTitle=document.title;
-   const url=new URL(location.hash.slice(1)||'/',location.origin);
    ownedTitle=window.PLM.t(url.searchParams.get('pageUrl')==='/PLM/web/manage.html'?'PlmFavoritesSettings':'Favorites');
+   if(scope){const name=window.PLM.libraryNavigation?.name(scope);if(name)ownedTitle=name+' · '+ownedTitle;}
    if(document.title!==ownedTitle)document.title=ownedTitle;
   }else if(!active){
    if(ownedTitle!==null&&document.title===ownedTitle&&previousTitle!==null)document.title=previousTitle;

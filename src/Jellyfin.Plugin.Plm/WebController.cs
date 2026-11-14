@@ -25,6 +25,10 @@ public sealed class WebController : ControllerBase
     public IActionResult Surface()=>Resource("surface.js","application/javascript");
     [AllowAnonymous][HttpGet("providers.js")]
     public IActionResult Providers()=>Resource("providers.js","application/javascript");
+    [AllowAnonymous][HttpGet("library-navigation.js")]
+    public IActionResult LibraryNavigation()=>Resource("library-navigation.js","application/javascript");
+    [AllowAnonymous][HttpGet("library-rows.js")]
+    public IActionResult LibraryRows()=>Resource("library-rows.js","application/javascript");
     [AllowAnonymous][HttpGet("library.js")]
     public IActionResult Library()=>Resource("library.js","application/javascript");
     [AllowAnonymous][HttpGet("manage.js")]
